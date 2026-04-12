@@ -27,5 +27,5 @@ val domainModule = module {
 }
 
 val presentationModule = module {
-    viewModel { GameViewModel(get(), get(), get()) }
+    viewModel { GameViewModel(get(), get()) }
 }

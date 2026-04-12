@@ -11,7 +11,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.gameway.domain.model.CharacterState
 import com.gameway.domain.model.Level
 import com.gameway.domain.model.PowerUpType
 

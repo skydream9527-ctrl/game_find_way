@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun LevelSelectScreen(chapterId: Int, onLevelSelected: (Int) -> Unit, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFF1A237E)).padding(16.dp)) {

@@ -1,7 +1,7 @@
 package com.gameway.data.repository
 
 import com.gameway.data.local.DataStoreManager
-import com.gameway.data.local.Keys
+import com.gameway.data.local.DataStoreManager.Keys
 import com.gameway.domain.repository.GameSettings
 import com.gameway.domain.repository.SettingsRepository
 
