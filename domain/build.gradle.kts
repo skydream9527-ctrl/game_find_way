@@ -6,13 +6,13 @@ kotlin {
     jvm()
     
     sourceSets {
-        val commonMain by getting {
+        getByName("commonMain") {
             dependencies {
                 implementation(project(":core"))
                 implementation(libs.kotlinx.coroutines.core)
             }
         }
-        val commonTest by getting {
+        getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test"))
             }

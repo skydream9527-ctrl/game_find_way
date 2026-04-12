@@ -6,7 +6,7 @@ kotlin {
     jvm()
     
     sourceSets {
-        val commonMain by getting {
+        getByName("commonMain") {
             dependencies {
                 implementation(libs.kotlinx.coroutines.core)
             }
