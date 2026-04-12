@@ -20,7 +20,11 @@ class GameEngine {
     
     fun startLevel(newLevel: Level) {
         level = newLevel
-        character = Character.createDefault().copy(position = character.position.copy(x = GameConstants.STARTING_POSITION_X))
+        val firstPlatform = newLevel.platforms.firstOrNull()
+        val startY = firstPlatform?.y ?: GameConstants.STARTING_PLATFORM_Y
+        character = Character.createDefault().copy(
+            position = com.gameway.domain.model.Vector2(GameConstants.STARTING_POSITION_X, startY - 5f)
+        )
         scrollX = 0f
         score = 0
         gameState = GameState.Countdown

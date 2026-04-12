@@ -55,8 +55,17 @@ object CollisionDetector {
                 val minOverlap = minOf(overlapLeft, overlapRight, overlapTop, overlapBottom)
                 
                 when (minOverlap) {
-                    overlapTop -> results.add(CollisionResult.LandedOnPlatform(platform))
-                    overlapLeft, overlapRight -> results.add(CollisionResult.HitSideOfPlatform(platform))
+                    overlapTop -> {
+                        if (character.velocity.y > 0) {
+                            results.add(CollisionResult.LandedOnPlatform(platform))
+                        }
+                    }
+                    overlapLeft -> {
+                        if (character.velocity.y >= 0) {
+                            results.add(CollisionResult.HitSideOfPlatform(platform))
+                        }
+                    }
+                    overlapRight -> {}
                 }
             }
         }

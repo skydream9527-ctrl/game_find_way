@@ -72,11 +72,15 @@ data class Level(
                     Difficulty.EXPERT -> random.nextFloat(30f, 60f)
                 }
                 
-                val yVariation = when (difficulty) {
-                    Difficulty.EASY -> random.nextFloat(-60f, 40f)
-                    Difficulty.MEDIUM -> random.nextFloat(-80f, 80f)
-                    Difficulty.HARD -> random.nextFloat(-100f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
-                    Difficulty.EXPERT -> random.nextFloat(-120f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
+                val yVariation = if (i == 0) {
+                    0f
+                } else {
+                    when (difficulty) {
+                        Difficulty.EASY -> random.nextFloat(-60f, 40f)
+                        Difficulty.MEDIUM -> random.nextFloat(-80f, 80f)
+                        Difficulty.HARD -> random.nextFloat(-100f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
+                        Difficulty.EXPERT -> random.nextFloat(-120f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
+                    }
                 }
                 
                 var y = GameConstants.STARTING_PLATFORM_Y + yVariation
