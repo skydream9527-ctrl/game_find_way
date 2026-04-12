@@ -62,7 +62,7 @@ data class Level(
         
         private fun generatePlatforms(count: Int, difficulty: Difficulty, random: Random): List<Platform> {
             val platforms = mutableListOf<Platform>()
-            var x = 150f
+            var x = GameConstants.STARTING_POSITION_X
             val startY = 350f
             
             for (i in 0 until count) {
@@ -80,7 +80,7 @@ data class Level(
                     Difficulty.EXPERT -> 150f
                 }
                 
-                val y = startY + random.nextFloat(-yVariation, yVariation)
+                var y = startY + random.nextFloat(-yVariation, yVariation)
                 
                 val type = if (difficulty >= Difficulty.HARD && i > count / 2) {
                     if (random.nextFloat() > 0.5f) PlatformType.MOVING_HORIZONTAL
@@ -92,26 +92,60 @@ data class Level(
                 val moveRange = if (type != PlatformType.STATIC) random.nextFloat(50f, 100f) else 0f
                 val moveSpeed = if (type != PlatformType.STATIC) random.nextFloat(0.5f, 1.5f) else 0f
                 
-                platforms.add(
-                    Platform(
-                        id = i,
-                        x = x,
-                        y = y.coerceIn(200f, 500f),
-                        width = width,
-                        type = type,
-                        moveRange = moveRange,
-                        moveSpeed = moveSpeed,
-                        moveOffset = random.nextFloat(0f, 360f)
-                    )
+                val candidate = Platform(
+                    id = i,
+                    x = x,
+                    y = y.coerceIn(200f, 500f),
+                    width = width,
+                    type = type,
+                    moveRange = moveRange,
+                    moveSpeed = moveSpeed,
+                    moveOffset = random.nextFloat(0f, 360f)
                 )
                 
-                val gap = when (difficulty) {
-                    Difficulty.EASY -> random.nextFloat(80f, 120f)
-                    Difficulty.MEDIUM -> random.nextFloat(100f, 160f)
-                    Difficulty.HARD -> random.nextFloat(120f, 200f)
-                    Difficulty.EXPERT -> random.nextFloat(150f, 250f)
+                val finalPlatform = if (platforms.isEmpty()) {
+                    candidate
+                } else {
+                    val previous = platforms.last()
+                    if (Platform.isReachable(previous, candidate)) {
+                        candidate
+                    } else {
+                        val adjustedY = previous.y.coerceIn(200f, 500f)
+                        val minGap = random.nextFloat(50f, 80f)
+                        val maxGap = minOf(
+                            GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE,
+                            random.nextFloat(100f, 150f)
+                        )
+                        val safeGap = random.nextFloat(minGap, maxGap)
+                        
+                        Platform(
+                            id = i,
+                            x = previous.right + safeGap,
+                            y = adjustedY,
+                            width = width,
+                            type = type,
+                            moveRange = moveRange,
+                            moveSpeed = moveSpeed,
+                            moveOffset = random.nextFloat(0f, 360f)
+                        )
+                    }
                 }
-                x += width + gap
+                
+                platforms.add(finalPlatform)
+                
+                val gapRange = when (difficulty) {
+                    Difficulty.EASY -> 80f to 120f
+                    Difficulty.MEDIUM -> 100f to 160f
+                    Difficulty.HARD -> 120f to 180f
+                    Difficulty.EXPERT -> 150f to 200f
+                }
+                
+                val gap = random.nextFloat(
+                    gapRange.first.coerceAtMost(GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE - 20f),
+                    gapRange.second.coerceAtMost(GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE)
+                )
+                
+                x = finalPlatform.right + gap
             }
             
             return platforms
