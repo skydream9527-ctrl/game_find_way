@@ -24,7 +24,7 @@ class GameEngine {
         scrollX = 0f
         score = 0
         gameState = GameState.Countdown
-        countdownEnd = System.currentTimeMillis() + 2000L
+        countdownEnd = System.currentTimeMillis() + GameConstants.COUNTDOWN_DURATION
         lastUpdateTime = System.currentTimeMillis()
     }
     
@@ -56,12 +56,12 @@ class GameEngine {
         val currentLevel = level ?: return
         
         character = PhysicsSystem.update(character, deltaTime)
-        scrollX = character.position.x - 100f
+        scrollX = character.position.x - GameConstants.SCROLL_OFFSET
         
         val updatedPlatforms = currentLevel.platforms.map { platform ->
             if (platform.type != PlatformType.STATIC) {
-                val offset = kotlin.math.sin((currentTime / 1000f) * platform.moveSpeed + platform.moveOffset) * platform.moveRange
-                platform.copy(x = platform.x + offset * 0.01f)
+                val offset = kotlin.math.sin((currentTime / GameConstants.PLATFORM_MOVEMENT_SPEED_FACTOR) * platform.moveSpeed + platform.moveOffset) * platform.moveRange
+                platform.copy(x = platform.originalX + offset * GameConstants.PLATFORM_MOVEMENT_SCALE)
             } else {
                 platform
             }
@@ -83,7 +83,7 @@ class GameEngine {
                     }
                 }
                 is CollisionResult.CollectedCoin -> {
-                    score += 10
+                    score += GameConstants.COIN_SCORE
                     character = character.copy(coinsCollected = character.coinsCollected + 1)
                 }
                 is CollisionResult.CollectedPowerUp -> {
@@ -92,7 +92,7 @@ class GameEngine {
                         activePowerUps = character.activePowerUps + ActivePowerUp.create(powerUp.type),
                         maxJumps = if (powerUp.type == PowerUpType.GEM) 2 else character.maxJumps
                     )
-                    score += 20
+                    score += GameConstants.POWERUP_SCORE
                 }
                 is CollisionResult.FellOffScreen -> {
                     gameState = if (character.hasShield) {

@@ -24,4 +24,11 @@ object GameConstants {
     const val LIGHTNING_DURATION = 8000L
     
     const val MILLIS_PER_FRAME = 16f
+    
+    const val COUNTDOWN_DURATION = 2000L
+    const val SCROLL_OFFSET = 100f
+    const val COIN_SCORE = 10
+    const val POWERUP_SCORE = 20
+    const val PLATFORM_MOVEMENT_SPEED_FACTOR = 1000f
+    const val PLATFORM_MOVEMENT_SCALE = 0.01f
 }

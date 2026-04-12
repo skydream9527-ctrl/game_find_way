@@ -13,7 +13,8 @@ data class Platform(
     val type: PlatformType = PlatformType.STATIC,
     val moveRange: Float = 0f,
     val moveSpeed: Float = 0f,
-    val moveOffset: Float = 0f
+    val moveOffset: Float = 0f,
+    val originalX: Float = x
 ) {
     val left: Float get() = x
     val right: Float get() = x + width
