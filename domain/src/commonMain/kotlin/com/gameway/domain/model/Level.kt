@@ -63,7 +63,6 @@ data class Level(
         private fun generatePlatforms(count: Int, difficulty: Difficulty, random: Random): List<Platform> {
             val platforms = mutableListOf<Platform>()
             var x = GameConstants.STARTING_POSITION_X
-            val startY = 350f
             
             for (i in 0 until count) {
                 val width = when (difficulty) {
@@ -80,7 +79,7 @@ data class Level(
                     Difficulty.EXPERT -> random.nextFloat(-120f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
                 }
                 
-                var y = startY + yVariation
+                var y = GameConstants.STARTING_PLATFORM_Y + yVariation
                 
                 val type = if (difficulty >= Difficulty.HARD && i > count / 2) {
                     if (random.nextFloat() > 0.5f) PlatformType.MOVING_HORIZONTAL
@@ -95,7 +94,7 @@ data class Level(
                 val candidate = Platform(
                     id = i,
                     x = x,
-                    y = y.coerceIn(200f, 500f),
+                    y = y.coerceIn(GameConstants.MIN_PLATFORM_Y, GameConstants.MAX_PLATFORM_Y),
                     width = width,
                     type = type,
                     moveRange = moveRange,
@@ -110,19 +109,18 @@ data class Level(
                     if (Platform.isReachable(previous, candidate)) {
                         candidate
                     } else {
-                        val adjustedY = previous.y.coerceIn(200f, 500f)
-                        val minGap = random.nextFloat(50f, 80f)
-                        val maxGap = minOf(
-                            GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE,
-                            random.nextFloat(100f, 150f)
+                        val safeXGap = minOf(
+                            random.nextFloat(50f, 80f),
+                            GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE * 0.8f
                         )
-                        val safeGap = random.nextFloat(minGap, maxGap)
+                        val safeX = previous.right + safeXGap
+                        val safeY = previous.y
                         
                         Platform(
                             id = i,
-                            x = previous.right + safeGap,
-                            y = adjustedY,
-                            width = width,
+                            x = safeX,
+                            y = safeY.coerceIn(GameConstants.MIN_PLATFORM_Y, GameConstants.MAX_PLATFORM_Y),
+                            width = width.coerceAtLeast(60f),
                             type = type,
                             moveRange = moveRange,
                             moveSpeed = moveSpeed,
@@ -173,7 +171,7 @@ data class Level(
                 PowerUp(
                     id = index,
                     x = platform.x + platform.width / 2,
-                    y = platform.y - 30f,
+                    y = platform.y - GameConstants.POWERUP_Y_OFFSET,
                     type = type,
                     isPermanent = type == PowerUpType.GEM || type == PowerUpType.STAR
                 )
@@ -188,7 +186,7 @@ data class Level(
                 Coin(
                     id = index,
                     x = platform.x + random.nextFloat(0f, platform.width),
-                    y = platform.y - 25f
+                    y = platform.y - GameConstants.COIN_Y_OFFSET
                 )
             }
         }

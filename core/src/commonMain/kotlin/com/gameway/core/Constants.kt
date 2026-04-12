@@ -32,4 +32,10 @@ object GameConstants {
     const val PLATFORM_MOVEMENT_SPEED_FACTOR = 1000f
     const val PLATFORM_MOVEMENT_SCALE = 0.01f
     const val STARTING_POSITION_X = 50f
+    
+    const val STARTING_PLATFORM_Y = 350f
+    const val MIN_PLATFORM_Y = 200f
+    const val MAX_PLATFORM_Y = 500f
+    const val POWERUP_Y_OFFSET = 30f
+    const val COIN_Y_OFFSET = 25f
 }
