@@ -2,12 +2,12 @@ package com.gameway.core
 
 object GameConstants {
     const val GRAVITY = 0.6f
-    const val MIN_JUMP_POWER = 8f
-    const val MAX_JUMP_POWER = 16f
-    const val MOVE_SPEED = 3f
+    const val JUMP_POWER = 12f
+    const val MOVE_SPEED = 5f
     const val MAX_MOVE_SPEED = 6f
-    const val ACCELERATION_TIME = 1500L
-    const val MAX_CHARGE_TIME = 2000L
+    
+    const val MAX_HORIZONTAL_JUMP_DISTANCE = 200f
+    const val MAX_VERTICAL_JUMP_HEIGHT = 120f
     
     const val TOTAL_CHAPTERS = 10
     const val LEVELS_PER_CHAPTER = 10
