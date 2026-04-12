@@ -19,7 +19,8 @@ data class GameUiState(
     val scrollX: Float = 0f,
     val score: Int = 0,
     val chapterId: Int = 1,
-    val levelNumber: Int = 1
+    val levelNumber: Int = 1,
+    val level: com.gameway.domain.model.Level? = null
 )
 
 class GameViewModel(
@@ -37,7 +38,12 @@ class GameViewModel(
         viewModelScope.launch {
             val level = getLevelUseCase(chapterId, levelNumber)
             gameEngine.startLevel(level)
-            _uiState.value = _uiState.value.copy(chapterId = chapterId, levelNumber = levelNumber, gameState = GameState.Countdown)
+            _uiState.value = _uiState.value.copy(
+                chapterId = chapterId, 
+                levelNumber = levelNumber, 
+                level = level,
+                gameState = GameState.Countdown
+            )
             startGameLoop()
         }
     }
@@ -48,6 +54,7 @@ class GameViewModel(
         
         viewModelScope.launch {
             while (gameLoopActive) {
+                gameEngine.update()
                 val state = gameEngine.getGameState()
                 _uiState.value = _uiState.value.copy(
                     character = gameEngine.getCharacter(),

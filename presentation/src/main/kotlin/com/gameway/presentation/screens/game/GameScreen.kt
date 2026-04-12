@@ -28,7 +28,7 @@ fun GameScreen(chapterId: Int, levelNumber: Int, onLevelComplete: () -> Unit, on
     LaunchedEffect(chapterId, levelNumber) { viewModel.loadLevel(chapterId, levelNumber) }
     
     Box(modifier = Modifier.fillMaxSize()) {
-        GameCanvas(viewModel = viewModel, chapterId = chapterId, levelNumber = levelNumber)
+        GameCanvas(viewModel = viewModel)
         
         Row(
             modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.5f)).padding(horizontal = 16.dp, vertical = 8.dp),

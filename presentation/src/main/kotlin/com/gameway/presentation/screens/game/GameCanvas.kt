@@ -11,12 +11,14 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.gameway.domain.model.Level
 import com.gameway.domain.model.PowerUpType
 
 @Composable
-fun GameCanvas(viewModel: GameViewModel, chapterId: Int, levelNumber: Int) {
+fun GameCanvas(viewModel: GameViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val level = uiState.level
+    
+    if (level == null) return
     
     Canvas(
         modifier = Modifier.fillMaxSize().pointerInput(Unit) {
@@ -33,7 +35,6 @@ fun GameCanvas(viewModel: GameViewModel, chapterId: Int, levelNumber: Int) {
         
         val viewportX = uiState.scrollX * scale
         
-        val level = Level.generate(chapterId, levelNumber, 42L)
         for (platform in level.platforms) {
             val screenX = platform.x - viewportX
             if (screenX > -platform.width * scale && screenX < canvasWidth + platform.width * scale) {

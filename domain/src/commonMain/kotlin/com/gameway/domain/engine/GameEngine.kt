@@ -141,4 +141,5 @@ class GameEngine {
     fun getGameState(): GameState = gameState
     fun getScrollX(): Float = scrollX
     fun getScore(): Int = score
+    fun getLevel(): Level? = level
 }
