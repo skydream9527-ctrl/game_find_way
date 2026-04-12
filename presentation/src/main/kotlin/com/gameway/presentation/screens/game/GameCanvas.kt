@@ -21,12 +21,7 @@ fun GameCanvas(viewModel: GameViewModel, chapterId: Int, levelNumber: Int) {
     Canvas(
         modifier = Modifier.fillMaxSize().pointerInput(Unit) {
             detectTapGestures(
-                onTap = { viewModel.onTap() },
-                onPress = {
-                    viewModel.onTouchDown()
-                    tryAwaitRelease()
-                    viewModel.onTouchUp()
-                }
+                onTap = { viewModel.onTap() }
             )
         }
     ) {
@@ -83,13 +78,5 @@ fun GameCanvas(viewModel: GameViewModel, chapterId: Int, levelNumber: Int) {
         drawCircle(color = Color(0xFFFFE0B2), radius = 12f * scale, center = Offset(charScreenX, charScreenY - 25f * scale))
         drawCircle(color = Color(0xFF333333), radius = 2f * scale, center = Offset(charScreenX - 4f * scale, charScreenY - 26f * scale))
         drawCircle(color = Color(0xFF333333), radius = 2f * scale, center = Offset(charScreenX + 4f * scale, charScreenY - 26f * scale))
-        
-        if (uiState.chargeProgress > 0f) {
-            drawRect(
-                color = Color(0xFFFF9800).copy(alpha = 0.5f),
-                topLeft = Offset(canvasWidth / 2 - 50f, canvasHeight - 40f),
-                size = Size(100f * uiState.chargeProgress, 8f)
-            )
-        }
     }
 }

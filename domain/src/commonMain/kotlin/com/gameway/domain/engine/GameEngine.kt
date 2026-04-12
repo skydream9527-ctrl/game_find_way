@@ -55,10 +55,6 @@ class GameEngine {
     private fun updateGame(deltaTime: Long, currentTime: Long) {
         val currentLevel = level ?: return
         
-        if (character.isCharging) {
-            character = PhysicsSystem.updateCharge(character, deltaTime)
-        }
-        
         character = PhysicsSystem.update(character, deltaTime, scrollX)
         scrollX = character.position.x - 100f
         
@@ -120,19 +116,7 @@ class GameEngine {
         if (gameState !is GameState.Playing) return
         
         if (character.isGrounded || character.jumpCount < character.maxJumps) {
-            character = PhysicsSystem.applyJump(character, character.effectiveJumpPower)
-        }
-    }
-    
-    fun startCharge() {
-        if (gameState !is GameState.Playing) return
-        character = PhysicsSystem.startCharging(character)
-    }
-    
-    fun releaseCharge() {
-        if (gameState !is GameState.Playing) return
-        if (character.isCharging) {
-            character = PhysicsSystem.applyJump(character, character.effectiveJumpPower)
+            character = PhysicsSystem.applyJump(character)
         }
     }
     

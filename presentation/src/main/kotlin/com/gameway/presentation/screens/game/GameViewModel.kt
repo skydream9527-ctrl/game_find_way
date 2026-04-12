@@ -19,8 +19,7 @@ data class GameUiState(
     val scrollX: Float = 0f,
     val score: Int = 0,
     val chapterId: Int = 1,
-    val levelNumber: Int = 1,
-    val chargeProgress: Float = 0f
+    val levelNumber: Int = 1
 )
 
 class GameViewModel(
@@ -54,8 +53,7 @@ class GameViewModel(
                     character = gameEngine.getCharacter(),
                     gameState = state,
                     scrollX = gameEngine.getScrollX(),
-                    score = gameEngine.getScore(),
-                    chargeProgress = if (gameEngine.getCharacter().isCharging) gameEngine.getCharacter().chargeTime / 2000f else 0f
+                    score = gameEngine.getScore()
                 )
                 
                 if (state is GameState.Completed || state is GameState.Failed) {
@@ -68,8 +66,6 @@ class GameViewModel(
         }
     }
     
-    fun onTouchDown() { gameEngine.startCharge() }
-    fun onTouchUp() { gameEngine.releaseCharge() }
     fun onTap() { gameEngine.jump() }
     
     fun restart() {
