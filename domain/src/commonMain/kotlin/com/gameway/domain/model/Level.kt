@@ -39,7 +39,7 @@ data class Level(
                 platforms = platforms,
                 powerUps = powerUps,
                 coins = coins,
-                targetScore = coins.size * 10 + powerUps.size * 20
+                targetScore = coins.size * GameConstants.COIN_SCORE + powerUps.size * GameConstants.POWERUP_SCORE
             )
         }
         
