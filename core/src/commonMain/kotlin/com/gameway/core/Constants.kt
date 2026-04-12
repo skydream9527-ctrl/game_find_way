@@ -31,4 +31,5 @@ object GameConstants {
     const val POWERUP_SCORE = 20
     const val PLATFORM_MOVEMENT_SPEED_FACTOR = 1000f
     const val PLATFORM_MOVEMENT_SCALE = 0.01f
+    const val STARTING_POSITION_X = 50f
 }

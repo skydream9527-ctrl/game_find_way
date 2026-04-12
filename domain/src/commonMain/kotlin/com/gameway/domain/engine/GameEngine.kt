@@ -20,7 +20,7 @@ class GameEngine {
     
     fun startLevel(newLevel: Level) {
         level = newLevel
-        character = Character.createDefault().copy(position = character.position.copy(x = 50f))
+        character = Character.createDefault().copy(position = character.position.copy(x = GameConstants.STARTING_POSITION_X))
         scrollX = 0f
         score = 0
         gameState = GameState.Countdown
