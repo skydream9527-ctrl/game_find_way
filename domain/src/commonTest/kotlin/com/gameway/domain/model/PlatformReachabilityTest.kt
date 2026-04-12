@@ -54,4 +54,28 @@ class PlatformReachabilityTest {
         
         assertTrue(Platform.isReachable(platform1, platform2))
     }
+    
+    @Test
+    fun testExactHorizontalBoundary() {
+        val platform1 = Platform(id = 1, x = 100f, y = 300f, width = 100f)
+        val platform2 = Platform(id = 2, x = 100f + 100f + GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE, y = 300f, width = 80f)
+        
+        assertTrue(Platform.isReachable(platform1, platform2))
+    }
+    
+    @Test
+    fun testExactVerticalBoundary() {
+        val platform1 = Platform(id = 1, x = 100f, y = 300f, width = 100f)
+        val platform2 = Platform(id = 2, x = 200f, y = 300f - GameConstants.MAX_VERTICAL_JUMP_HEIGHT, width = 80f)
+        
+        assertTrue(Platform.isReachable(platform1, platform2))
+    }
+    
+    @Test
+    fun testOverlappingPlatforms() {
+        val platform1 = Platform(id = 1, x = 100f, y = 300f, width = 100f)
+        val platform2 = Platform(id = 2, x = 150f, y = 300f, width = 80f)
+        
+        assertTrue(Platform.isReachable(platform1, platform2))
+    }
 }

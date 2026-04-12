@@ -24,9 +24,10 @@ data class Platform(
     val bottom: Float get() = y + height
     
     companion object {
+        // Note: Assumes target platform is to the right (character only moves forward)
         fun isReachable(from: Platform, to: Platform): Boolean {
-            val horizontalGap = to.left - from.right
-            val verticalDiff = from.y - to.y
+            val horizontalGap = to.left - from.right  // gap from right edge of 'from' to left edge of 'to'
+            val verticalDiff = from.y - to.y  // positive = target is higher
             
             val horizontalReachable = horizontalGap <= GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE
             val verticalReachable = verticalDiff <= GameConstants.MAX_VERTICAL_JUMP_HEIGHT
