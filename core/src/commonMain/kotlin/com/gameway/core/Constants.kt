@@ -38,4 +38,7 @@ object GameConstants {
     const val MAX_PLATFORM_Y = 500f
     const val POWERUP_Y_OFFSET = 30f
     const val COIN_Y_OFFSET = 25f
+    const val MOVING_PLATFORM_PROBABILITY = 0.5f
+    const val PLATFORM_MIN_MOVE_SPEED = 0.5f
+    const val PLATFORM_MAX_MOVE_SPEED = 1.5f
 }

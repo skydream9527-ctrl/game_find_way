@@ -82,14 +82,14 @@ data class Level(
                 var y = GameConstants.STARTING_PLATFORM_Y + yVariation
                 
                 val type = if (difficulty >= Difficulty.HARD && i > count / 2) {
-                    if (random.nextFloat() > 0.5f) PlatformType.MOVING_HORIZONTAL
+                    if (random.nextFloat() > GameConstants.MOVING_PLATFORM_PROBABILITY) PlatformType.MOVING_HORIZONTAL
                     else PlatformType.STATIC
                 } else {
                     PlatformType.STATIC
                 }
                 
                 val moveRange = if (type != PlatformType.STATIC) random.nextFloat(50f, 100f) else 0f
-                val moveSpeed = if (type != PlatformType.STATIC) random.nextFloat(0.5f, 1.5f) else 0f
+                val moveSpeed = if (type != PlatformType.STATIC) random.nextFloat(GameConstants.PLATFORM_MIN_MOVE_SPEED, GameConstants.PLATFORM_MAX_MOVE_SPEED) else 0f
                 
                 val candidate = Platform(
                     id = i,
