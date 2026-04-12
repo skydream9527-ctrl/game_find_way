@@ -7,6 +7,7 @@ import com.gameway.domain.model.Vector2
 
 object PhysicsSystem {
     
+    @Suppress("UNUSED_PARAMETER")
     fun update(character: Character, deltaTime: Long, currentScrollX: Float): Character {
         val dt = deltaTime / 16f
         

@@ -117,6 +117,7 @@ data class Level(
             return platforms
         }
         
+        @Suppress("UNUSED_PARAMETER")
         private fun generatePowerUps(
             platforms: List<Platform>,
             difficulty: Difficulty,
