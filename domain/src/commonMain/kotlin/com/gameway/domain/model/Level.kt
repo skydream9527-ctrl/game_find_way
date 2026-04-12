@@ -74,13 +74,13 @@ data class Level(
                 }
                 
                 val yVariation = when (difficulty) {
-                    Difficulty.EASY -> 30f
-                    Difficulty.MEDIUM -> 60f
-                    Difficulty.HARD -> 100f
-                    Difficulty.EXPERT -> 150f
+                    Difficulty.EASY -> random.nextFloat(-60f, 40f)
+                    Difficulty.MEDIUM -> random.nextFloat(-80f, 80f)
+                    Difficulty.HARD -> random.nextFloat(-100f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
+                    Difficulty.EXPERT -> random.nextFloat(-120f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
                 }
                 
-                var y = startY + random.nextFloat(-yVariation, yVariation)
+                var y = startY + yVariation
                 
                 val type = if (difficulty >= Difficulty.HARD && i > count / 2) {
                     if (random.nextFloat() > 0.5f) PlatformType.MOVING_HORIZONTAL
