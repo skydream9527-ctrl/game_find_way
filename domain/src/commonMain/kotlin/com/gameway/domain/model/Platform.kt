@@ -1,5 +1,7 @@
 package com.gameway.domain.model
 
+import com.gameway.core.GameConstants
+
 enum class PlatformType {
     STATIC, MOVING_HORIZONTAL, MOVING_VERTICAL
 }
@@ -20,4 +22,16 @@ data class Platform(
     val right: Float get() = x + width
     val top: Float get() = y
     val bottom: Float get() = y + height
+    
+    companion object {
+        fun isReachable(from: Platform, to: Platform): Boolean {
+            val horizontalGap = to.left - from.right
+            val verticalDiff = from.y - to.y
+            
+            val horizontalReachable = horizontalGap <= GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE
+            val verticalReachable = verticalDiff <= GameConstants.MAX_VERTICAL_JUMP_HEIGHT
+            
+            return horizontalReachable && verticalReachable
+        }
+    }
 }
