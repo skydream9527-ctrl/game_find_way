@@ -1,7 +1,7 @@
 package com.gameway.domain.model
 
 import com.gameway.core.GameConstants
-import com.gameway.core.util.nextInt
+import com.gameway.core.util.nextFloat
 import kotlin.random.Random
 
 enum class Difficulty {
@@ -57,7 +57,7 @@ data class Level(
                 Difficulty.HARD -> 35 to 45
                 Difficulty.EXPERT -> 40 to GameConstants.MAX_PLATFORMS
             }
-            return random.nextInt(min, max)
+            return random.nextInt(min, max + 1)
         }
         
         private fun generatePlatforms(count: Int, difficulty: Difficulty, random: Random): List<Platform> {
@@ -124,7 +124,7 @@ data class Level(
             chapterId: Int,
             levelNumber: Int
         ): List<PowerUp> {
-            val count = random.nextInt(GameConstants.MIN_ITEMS_PER_LEVEL, GameConstants.MAX_ITEMS_PER_LEVEL)
+            val count = random.nextInt(GameConstants.MIN_ITEMS_PER_LEVEL, GameConstants.MAX_ITEMS_PER_LEVEL + 1)
             val isLastLevel = levelNumber == GameConstants.LEVELS_PER_CHAPTER
             
             return List(count) { index ->
@@ -146,7 +146,7 @@ data class Level(
         }
         
         private fun generateCoins(platforms: List<Platform>, random: Random): List<Coin> {
-            val count = random.nextInt(GameConstants.MIN_COINS_PER_LEVEL, GameConstants.MAX_COINS_PER_LEVEL)
+            val count = random.nextInt(GameConstants.MIN_COINS_PER_LEVEL, GameConstants.MAX_COINS_PER_LEVEL + 1)
             
             return List(count) { index ->
                 val platform = platforms.random(random)

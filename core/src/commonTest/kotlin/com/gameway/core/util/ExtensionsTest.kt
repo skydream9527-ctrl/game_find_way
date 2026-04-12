@@ -40,7 +40,7 @@ class ExtensionsTest {
     fun `nextInt returns value in range`() {
         val random = Random(42)
         repeat(100) {
-            val value = random.nextInt(5, 15)
+            val value = random.nextInt(5, 16)
             assertTrue(value in 5..15)
         }
     }
