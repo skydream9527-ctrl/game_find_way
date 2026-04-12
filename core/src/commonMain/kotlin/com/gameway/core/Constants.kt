@@ -22,4 +22,6 @@ object GameConstants {
     const val FEATHER_DURATION = 10000L
     const val BUTTERFLY_DURATION = 15000L
     const val LIGHTNING_DURATION = 8000L
+    
+    const val MILLIS_PER_FRAME = 16f
 }

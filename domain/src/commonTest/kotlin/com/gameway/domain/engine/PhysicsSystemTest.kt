@@ -28,7 +28,7 @@ class PhysicsSystemTest {
         val character = Character.createDefault().copy(
             velocity = Vector2(GameConstants.MOVE_SPEED, -GameConstants.JUMP_POWER)
         )
-        val updated = PhysicsSystem.update(character, 16L, 0f)
+        val updated = PhysicsSystem.update(character, 16L)
         
         assertTrue(updated.velocity.y > -GameConstants.JUMP_POWER)
         assertTrue(updated.position.x > character.position.x)

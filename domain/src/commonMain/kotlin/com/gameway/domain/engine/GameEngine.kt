@@ -55,7 +55,7 @@ class GameEngine {
     private fun updateGame(deltaTime: Long, currentTime: Long) {
         val currentLevel = level ?: return
         
-        character = PhysicsSystem.update(character, deltaTime, scrollX)
+        character = PhysicsSystem.update(character, deltaTime)
         scrollX = character.position.x - 100f
         
         val updatedPlatforms = currentLevel.platforms.map { platform ->

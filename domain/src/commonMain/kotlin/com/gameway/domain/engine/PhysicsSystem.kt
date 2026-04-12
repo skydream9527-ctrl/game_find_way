@@ -7,8 +7,8 @@ import com.gameway.domain.model.Vector2
 
 object PhysicsSystem {
     
-    fun update(character: Character, deltaTime: Long, currentScrollX: Float): Character {
-        val dt = deltaTime / 16f
+    fun update(character: Character, deltaTime: Long): Character {
+        val dt = deltaTime / GameConstants.MILLIS_PER_FRAME
         
         val gravity = character.effectiveGravity
         val newVelocityY = character.velocity.y + gravity * dt
