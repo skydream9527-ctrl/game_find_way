@@ -4,9 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,10 +23,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gameway.domain.model.GameState
 import com.gameway.presentation.screens.complete.LevelCompleteScreen
+import com.gameway.presentation.screens.complete.LevelFailedScreen
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun GameScreen(chapterId: Int, levelNumber: Int, onLevelComplete: () -> Unit, onLevelFailed: () -> Unit, viewModel: GameViewModel = koinViewModel()) {
+fun GameScreen(chapterId: Int, levelNumber: Int, onLevelComplete: () -> Unit, onLevelFailed: () -> Unit, onBackToMenu: () -> Unit, viewModel: GameViewModel = koinViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     LaunchedEffect(chapterId, levelNumber) { viewModel.loadLevel(chapterId, levelNumber) }
@@ -32,11 +37,22 @@ fun GameScreen(chapterId: Int, levelNumber: Int, onLevelComplete: () -> Unit, on
         
         Row(
             modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.5f)).padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "🪙 ${uiState.character.coinsCollected}", color = Color.White, fontSize = 16.sp)
+            Button(
+                onClick = onBackToMenu,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333)),
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                Text("返回", fontSize = 14.sp)
+            }
             Text(text = "章节$chapterId - 关卡$levelNumber", color = Color.White, fontSize = 14.sp)
-            Text(text = "分数: ${uiState.score}", color = Color.White, fontSize = 14.sp)
+            Row {
+                Text(text = "🪙 ${uiState.character.coinsCollected}", color = Color.White, fontSize = 16.sp)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "分数: ${uiState.score}", color = Color.White, fontSize = 14.sp)
+            }
         }
         
         if (uiState.gameState is GameState.Countdown) {
@@ -51,13 +67,16 @@ fun GameScreen(chapterId: Int, levelNumber: Int, onLevelComplete: () -> Unit, on
                     score = state.score,
                     coinsCollected = state.coinsCollected,
                     onNextLevel = { viewModel.completeLevel(); onLevelComplete() },
-                    onRestart = { viewModel.restart() }
+                    onRestart = { viewModel.restart() },
+                    onBackToMenu = onBackToMenu
                 )
             }
             is GameState.Failed -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("失败：${state.reason}", color = Color.Red, fontSize = 24.sp)
-                }
+                LevelFailedScreen(
+                    reason = state.reason,
+                    onRestart = { viewModel.restart() },
+                    onBackToMenu = onBackToMenu
+                )
             }
             else -> {}
         }

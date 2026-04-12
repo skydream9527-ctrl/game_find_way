@@ -68,7 +68,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 chapterId = chapterId,
                 levelNumber = levelNumber,
                 onLevelComplete = { navController.popBackStack() },
-                onLevelFailed = { navController.popBackStack() }
+                onLevelFailed = { navController.popBackStack() },
+                onBackToMenu = { navController.popBackStack(Screen.MainMenu.route, inclusive = false) }
             )
         }
         
