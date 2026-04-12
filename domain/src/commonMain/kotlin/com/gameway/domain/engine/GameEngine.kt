@@ -8,7 +8,10 @@ import com.gameway.domain.model.Level
 import com.gameway.domain.model.PlatformType
 import com.gameway.domain.model.PowerUpType
 
-class GameEngine {
+class GameEngine(
+    private val soundManager: SoundManager = SoundManager(),
+    private val soundPlayer: SoundPlayer? = null
+) {
     
     private var gameState: GameState = GameState.Loading
     private var character: Character = Character.createDefault()
@@ -17,6 +20,7 @@ class GameEngine {
     private var score: Int = 0
     private var lastUpdateTime: Long = 0L
     private var countdownEnd: Long = 0L
+    private var previousGrounded: Boolean = false
     
     fun startLevel(newLevel: Level) {
         level = newLevel
@@ -59,6 +63,7 @@ class GameEngine {
     private fun updateGame(deltaTime: Long, currentTime: Long) {
         val currentLevel = level ?: return
         
+        previousGrounded = character.isGrounded
         character = PhysicsSystem.update(character, deltaTime)
         scrollX = character.position.x - GameConstants.SCROLL_OFFSET
         
@@ -76,21 +81,28 @@ class GameEngine {
         for (collision in collisions) {
             when (collision) {
                 is CollisionResult.LandedOnPlatform -> {
+                    if (!previousGrounded && character.velocity.y > 0) {
+                        soundManager.play(GameSound.LAND, soundPlayer)
+                    }
                     character = PhysicsSystem.landOnPlatform(character, collision.platform.y)
+                    previousGrounded = true
                 }
                 is CollisionResult.HitSideOfPlatform -> {
                     gameState = if (character.hasShield) {
                         character = character.copy(activePowerUps = character.activePowerUps.filter { it.type != PowerUpType.SHIELD })
                         GameState.Playing
                     } else {
+                        soundManager.play(GameSound.FAIL, soundPlayer)
                         GameState.Failed("撞到平台侧面")
                     }
                 }
                 is CollisionResult.CollectedCoin -> {
+                    soundManager.play(GameSound.COIN, soundPlayer)
                     score += GameConstants.COIN_SCORE
                     character = character.copy(coinsCollected = character.coinsCollected + 1)
                 }
                 is CollisionResult.CollectedPowerUp -> {
+                    soundManager.play(GameSound.POWERUP, soundPlayer)
                     val powerUp = collision.powerUp
                     character = character.copy(
                         activePowerUps = character.activePowerUps + ActivePowerUp.create(powerUp.type),
@@ -103,6 +115,7 @@ class GameEngine {
                         character = character.copy(activePowerUps = character.activePowerUps.filter { it.type != PowerUpType.SHIELD })
                         GameState.Playing
                     } else {
+                        soundManager.play(GameSound.FAIL, soundPlayer)
                         GameState.Failed("掉落屏幕")
                     }
                 }
@@ -112,6 +125,7 @@ class GameEngine {
         
         val lastPlatform = updatedPlatforms.lastOrNull()
         if (lastPlatform != null && character.position.x > lastPlatform.x + lastPlatform.width) {
+            soundManager.play(GameSound.COMPLETE, soundPlayer)
             gameState = GameState.Completed(score, character.coinsCollected)
         }
     }
@@ -120,6 +134,7 @@ class GameEngine {
         if (gameState !is GameState.Playing) return
         
         if (character.isGrounded || character.jumpCount < character.maxJumps) {
+            soundManager.play(GameSound.JUMP, soundPlayer)
             character = PhysicsSystem.applyJump(character)
         }
     }

@@ -25,7 +25,7 @@ data class Level(
             seed: Long = System.currentTimeMillis()
         ): Level {
             val random = Random(seed)
-            val difficulty = getDifficultyForLevel(levelNumber)
+            val difficulty = getDifficultyForLevel(chapterId, levelNumber)
             val platformCount = getPlatformCount(difficulty, random)
             val platforms = generatePlatforms(platformCount, difficulty, random)
             val powerUps = generatePowerUps(platforms, difficulty, random, chapterId, levelNumber)
@@ -43,12 +43,15 @@ data class Level(
             )
         }
         
-        private fun getDifficultyForLevel(level: Int): Difficulty = when (level) {
-            in 1..3 -> Difficulty.EASY
-            in 4..6 -> Difficulty.MEDIUM
-            in 7..8 -> Difficulty.HARD
+        private fun getDifficultyForLevel(chapterId: Int, level: Int): Difficulty {
+        val baseLevel = (chapterId - 1) * GameConstants.LEVELS_PER_CHAPTER + level
+        return when (baseLevel) {
+            in 1..10 -> Difficulty.EASY
+            in 11..30 -> Difficulty.MEDIUM
+            in 31..70 -> Difficulty.HARD
             else -> Difficulty.EXPERT
         }
+    }
         
         private fun getPlatformCount(difficulty: Difficulty, random: Random): Int {
             val (min, max) = when (difficulty) {
