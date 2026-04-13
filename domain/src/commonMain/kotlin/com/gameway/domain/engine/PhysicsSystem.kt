@@ -8,14 +8,14 @@ import com.gameway.domain.model.Vector2
 object PhysicsSystem {
     
     fun update(character: Character, deltaTime: Long): Character {
-        val dt = deltaTime / GameConstants.MILLIS_PER_FRAME
+        val dt = deltaTime / 1000f
         
         val gravity = character.effectiveGravity
-        val newVelocityY = character.velocity.y + gravity * dt
+        val newVelocityY = character.velocity.y + gravity * dt * 60f
         val moveSpeed = character.effectiveMoveSpeed
         
-        val newX = character.position.x + moveSpeed * dt
-        val newY = character.position.y + character.velocity.y * dt
+        val newX = character.position.x + moveSpeed * dt * 60f
+        val newY = character.position.y + character.velocity.y * dt * 60f
         
         return character.copy(
             position = Vector2(newX, newY),

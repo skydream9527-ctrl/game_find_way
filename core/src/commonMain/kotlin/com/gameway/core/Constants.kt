@@ -6,6 +6,9 @@ object GameConstants {
     const val MOVE_SPEED = 5f
     const val MAX_MOVE_SPEED = 6f
     
+    const val GAME_WORLD_WIDTH = 800f
+    const val GAME_WORLD_HEIGHT = 600f
+    
     const val MAX_HORIZONTAL_JUMP_DISTANCE = 200f
     const val MAX_VERTICAL_JUMP_HEIGHT = 120f
     

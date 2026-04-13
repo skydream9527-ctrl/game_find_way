@@ -11,6 +11,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gameway.core.GameConstants
 import com.gameway.domain.model.Chapter
 import com.gameway.domain.model.PowerUpType
 
@@ -33,36 +34,48 @@ fun GameCanvas(viewModel: GameViewModel) {
     ) {
         val canvasWidth = size.width
         val canvasHeight = size.height
-        val scale = canvasWidth / 800f
+        
+        val scaleX = canvasWidth / GameConstants.GAME_WORLD_WIDTH
+        val scaleY = canvasHeight / GameConstants.GAME_WORLD_HEIGHT
+        val scale = minOf(scaleX, scaleY)
+        
+        val offsetX = (canvasWidth - GameConstants.GAME_WORLD_WIDTH * scale) / 2f
+        val offsetY = (canvasHeight - GameConstants.GAME_WORLD_HEIGHT * scale) / 2f
         
         drawRect(color = Color(theme.backgroundColor), size = size)
         
-        val viewportX = uiState.scrollX * scale
+        val viewportX = uiState.scrollX
         
         for (platform in level.platforms) {
-            val screenX = platform.x - viewportX
-            if (screenX > -platform.width * scale && screenX < canvasWidth + platform.width * scale) {
+            val screenX = (platform.x - viewportX) * scale + offsetX
+            val screenY = platform.y * scale + offsetY
+            val platformWidth = platform.width * scale
+            val platformHeight = platform.height * scale
+            
+            if (screenX > -platformWidth && screenX < canvasWidth + platformWidth) {
                 drawRoundRect(
                     color = Color(theme.platformColor),
-                    topLeft = Offset(screenX, platform.y * scale),
-                    size = Size(platform.width * scale, platform.height * scale)
+                    topLeft = Offset(screenX, screenY),
+                    size = Size(platformWidth, platformHeight)
                 )
             }
         }
         
         for (coin in level.coins) {
             if (!coin.collected) {
-                val screenX = coin.x - viewportX
-                if (screenX > -20f && screenX < canvasWidth + 20f) {
-                    drawCircle(color = Color(0xFFFFD700), radius = 8f * scale, center = Offset(screenX, coin.y * scale))
+                val screenX = (coin.x - viewportX) * scale + offsetX
+                val screenY = coin.y * scale + offsetY
+                if (screenX > -20f * scale && screenX < canvasWidth + 20f * scale) {
+                    drawCircle(color = Color(0xFFFFD700), radius = 8f * scale, center = Offset(screenX, screenY))
                 }
             }
         }
         
         for (powerUp in level.powerUps) {
             if (!powerUp.collected) {
-                val screenX = powerUp.x - viewportX
-                if (screenX > -20f && screenX < canvasWidth + 20f) {
+                val screenX = (powerUp.x - viewportX) * scale + offsetX
+                val screenY = powerUp.y * scale + offsetY
+                if (screenX > -20f * scale && screenX < canvasWidth + 20f * scale) {
                     val color = when (powerUp.type) {
                         PowerUpType.FEATHER -> Color(0xFF8BC34A)
                         PowerUpType.BUTTERFLY -> Color(0xFF03A9F4)
@@ -71,13 +84,13 @@ fun GameCanvas(viewModel: GameViewModel) {
                         PowerUpType.GEM -> Color(0xFFE91E63)
                         PowerUpType.STAR -> Color(0xFFFF9800)
                     }
-                    drawCircle(color = color, radius = 10f * scale, center = Offset(screenX, powerUp.y * scale))
+                    drawCircle(color = color, radius = 10f * scale, center = Offset(screenX, screenY))
                 }
             }
         }
         
-        val charScreenX = uiState.character.position.x - viewportX
-        val charScreenY = uiState.character.position.y * scale
+        val charScreenX = (uiState.character.position.x - viewportX) * scale + offsetX
+        val charScreenY = uiState.character.position.y * scale + offsetY
         
         drawCircle(color = Color(0xFF4A90D9), radius = 15f * scale, center = Offset(charScreenX, charScreenY - 10f * scale))
         drawCircle(color = Color(0xFFFFE0B2), radius = 12f * scale, center = Offset(charScreenX, charScreenY - 25f * scale))

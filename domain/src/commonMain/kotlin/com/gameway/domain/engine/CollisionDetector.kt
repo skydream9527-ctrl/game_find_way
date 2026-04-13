@@ -1,5 +1,6 @@
 package com.gameway.domain.engine
 
+import com.gameway.core.GameConstants
 import com.gameway.domain.model.Character
 import com.gameway.domain.model.Coin
 import com.gameway.domain.model.Platform
@@ -16,7 +17,6 @@ sealed class CollisionResult {
 
 object CollisionDetector {
     
-    private const val SCREEN_BOTTOM = 600f
     private const val CHARACTER_WIDTH = 30f
     private const val CHARACTER_HEIGHT = 40f
     
@@ -33,7 +33,7 @@ object CollisionDetector {
         val charTop = character.position.y - CHARACTER_HEIGHT
         val charBottom = character.position.y
         
-        if (charBottom > SCREEN_BOTTOM) {
+        if (charBottom > GameConstants.GAME_WORLD_HEIGHT) {
             results.add(CollisionResult.FellOffScreen)
             return results
         }
