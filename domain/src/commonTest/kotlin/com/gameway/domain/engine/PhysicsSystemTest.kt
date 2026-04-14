@@ -3,6 +3,7 @@ package com.gameway.domain.engine
 import com.gameway.core.GameConstants
 import com.gameway.domain.model.Character
 import com.gameway.domain.model.CharacterState
+import com.gameway.domain.model.CharacterType
 import com.gameway.domain.model.Vector2
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -47,5 +48,21 @@ class PhysicsSystemTest {
         assertEquals(0f, landed.velocity.y)
         assertEquals(CharacterState.RUNNING, landed.state)
         assertEquals(0, landed.jumpCount)
+    }
+    
+    @Test
+    fun `DOG has higher effective jump power than CAT`() {
+        val cat = Character.createDefault(CharacterType.CAT)
+        val dog = Character.createDefault(CharacterType.DOG)
+        
+        assertTrue(dog.effectiveJumpPower > cat.effectiveJumpPower)
+    }
+    
+    @Test
+    fun `HORSE has higher effective move speed than CAT`() {
+        val cat = Character.createDefault(CharacterType.CAT)
+        val horse = Character.createDefault(CharacterType.HORSE)
+        
+        assertTrue(horse.effectiveMoveSpeed > cat.effectiveMoveSpeed)
     }
 }

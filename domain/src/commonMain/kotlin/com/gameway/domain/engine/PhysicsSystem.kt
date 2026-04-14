@@ -36,7 +36,7 @@ object PhysicsSystem {
     
     fun applyJump(character: Character): Character {
         return character.copy(
-            velocity = Vector2(character.effectiveMoveSpeed, -GameConstants.JUMP_POWER),
+            velocity = Vector2(character.effectiveMoveSpeed, -character.effectiveJumpPower),
             isGrounded = false,
             jumpCount = character.jumpCount + 1,
             state = CharacterState.JUMPING
