@@ -68,92 +68,132 @@ data class Level(
             var x = GameConstants.STARTING_POSITION_X
             
             for (i in 0 until count) {
-                val width = when (difficulty) {
-                    Difficulty.EASY -> random.nextFloat(80f, 120f)
-                    Difficulty.MEDIUM -> random.nextFloat(60f, 100f)
-                    Difficulty.HARD -> random.nextFloat(40f, 80f)
-                    Difficulty.EXPERT -> random.nextFloat(30f, 60f)
-                }
+                val maxGap = getMaxGapForDifficulty(difficulty)
+                var attempts = 0
+                var platform: Platform? = null
                 
-                val yVariation = if (i == 0) {
-                    0f
-                } else {
-                    when (difficulty) {
-                        Difficulty.EASY -> random.nextFloat(-60f, 40f)
-                        Difficulty.MEDIUM -> random.nextFloat(-80f, 80f)
-                        Difficulty.HARD -> random.nextFloat(-100f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
-                        Difficulty.EXPERT -> random.nextFloat(-120f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
-                    }
-                }
-                
-                var y = GameConstants.STARTING_PLATFORM_Y + yVariation
-                
-                val type = if (difficulty >= Difficulty.HARD && i > count / 2) {
-                    if (random.nextFloat() > GameConstants.MOVING_PLATFORM_PROBABILITY) PlatformType.MOVING_HORIZONTAL
-                    else PlatformType.STATIC
-                } else {
-                    PlatformType.STATIC
-                }
-                
-                val moveRange = if (type != PlatformType.STATIC) random.nextFloat(50f, 100f) else 0f
-                val moveSpeed = if (type != PlatformType.STATIC) random.nextFloat(GameConstants.PLATFORM_MIN_MOVE_SPEED, GameConstants.PLATFORM_MAX_MOVE_SPEED) else 0f
-                
-                val candidate = Platform(
-                    id = i,
-                    x = x,
-                    y = y.coerceIn(GameConstants.MIN_PLATFORM_Y, GameConstants.MAX_PLATFORM_Y),
-                    width = width,
-                    type = type,
-                    moveRange = moveRange,
-                    moveSpeed = moveSpeed,
-                    moveOffset = random.nextFloat(0f, 360f)
-                )
-                
-                val finalPlatform = if (platforms.isEmpty()) {
-                    candidate
-                } else {
-                    val previous = platforms.last()
-                    if (Platform.isReachable(previous, candidate)) {
-                        candidate
+                while (attempts < 10 && platform == null) {
+                    val candidate = generateCandidatePlatform(
+                        id = i,
+                        startX = x,
+                        difficulty = difficulty,
+                        random = random,
+                        previous = platforms.lastOrNull()
+                    )
+                    
+                    if (!hasOverlap(candidate, platforms) && ensureReachability(candidate, platforms.lastOrNull())) {
+                        platform = candidate
                     } else {
-                        val safeXGap = minOf(
-                            random.nextFloat(50f, 80f),
-                            GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE * 0.8f
-                        )
-                        val safeX = previous.right + safeXGap
-                        val safeY = previous.y
-                        
-                        Platform(
-                            id = i,
-                            x = safeX,
-                            y = safeY.coerceIn(GameConstants.MIN_PLATFORM_Y, GameConstants.MAX_PLATFORM_Y),
-                            width = width.coerceAtLeast(60f),
-                            type = type,
-                            moveRange = moveRange,
-                            moveSpeed = moveSpeed,
-                            moveOffset = random.nextFloat(0f, 360f)
-                        )
+                        attempts++
                     }
                 }
                 
-                platforms.add(finalPlatform)
-                
-                val gapRange = when (difficulty) {
-                    Difficulty.EASY -> 80f to 120f
-                    Difficulty.MEDIUM -> 100f to 160f
-                    Difficulty.HARD -> 120f to 180f
-                    Difficulty.EXPERT -> 150f to 200f
+                if (platform == null) {
+                    val width = when (difficulty) {
+                        Difficulty.EASY -> 100f
+                        Difficulty.MEDIUM -> 80f
+                        Difficulty.HARD -> 60f
+                        Difficulty.EXPERT -> 50f
+                    }
+                    val previous = platforms.lastOrNull()
+                    val safeX = previous?.right?.plus(GameConstants.MIN_HORIZONTAL_GAP) ?: x
+                    val safeY = previous?.y ?: GameConstants.STARTING_PLATFORM_Y
+                    
+                    platform = Platform(
+                        id = i,
+                        x = safeX,
+                        y = safeY.coerceIn(GameConstants.MIN_PLATFORM_Y, GameConstants.MAX_PLATFORM_Y),
+                        width = width.coerceAtLeast(60f),
+                        type = PlatformType.STATIC,
+                        moveRange = 0f,
+                        moveSpeed = 0f,
+                        moveOffset = 0f
+                    )
                 }
                 
-                val gap = random.nextFloat(
-                    gapRange.first.coerceAtMost(GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE - 20f),
-                    gapRange.second.coerceAtMost(GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE)
-                )
-                
-                x = finalPlatform.right + gap
+                platforms.add(platform)
+                x = platform.right + random.nextFloat(GameConstants.MIN_HORIZONTAL_GAP, maxGap)
             }
             
             return platforms
+        }
+        
+        private fun generateCandidatePlatform(
+            id: Int,
+            startX: Float,
+            difficulty: Difficulty,
+            random: Random,
+            previous: Platform?
+        ): Platform {
+            val width = when (difficulty) {
+                Difficulty.EASY -> random.nextFloat(80f, 120f)
+                Difficulty.MEDIUM -> random.nextFloat(60f, 100f)
+                Difficulty.HARD -> random.nextFloat(40f, 80f)
+                Difficulty.EXPERT -> random.nextFloat(30f, 60f)
+            }
+            
+            val yVariation = if (previous == null) {
+                0f
+            } else {
+                when (difficulty) {
+                    Difficulty.EASY -> random.nextFloat(-60f, 40f)
+                    Difficulty.MEDIUM -> random.nextFloat(-80f, 80f)
+                    Difficulty.HARD -> random.nextFloat(-100f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
+                    Difficulty.EXPERT -> random.nextFloat(-120f, GameConstants.MAX_VERTICAL_JUMP_HEIGHT)
+                }
+            }
+            
+            val y = GameConstants.STARTING_PLATFORM_Y + yVariation
+            
+            val type = if (difficulty >= Difficulty.HARD && id > 10) {
+                if (random.nextFloat() > GameConstants.MOVING_PLATFORM_PROBABILITY) PlatformType.MOVING_HORIZONTAL
+                else PlatformType.STATIC
+            } else {
+                PlatformType.STATIC
+            }
+            
+            val moveRange = if (type != PlatformType.STATIC) random.nextFloat(50f, 100f) else 0f
+            val moveSpeed = if (type != PlatformType.STATIC) random.nextFloat(GameConstants.PLATFORM_MIN_MOVE_SPEED, GameConstants.PLATFORM_MAX_MOVE_SPEED) else 0f
+            
+            return Platform(
+                id = id,
+                x = startX,
+                y = y.coerceIn(GameConstants.MIN_PLATFORM_Y, GameConstants.MAX_PLATFORM_Y),
+                width = width,
+                type = type,
+                moveRange = moveRange,
+                moveSpeed = moveSpeed,
+                moveOffset = random.nextFloat(0f, 360f)
+            )
+        }
+        
+        private fun hasOverlap(candidate: Platform, existing: List<Platform>): Boolean {
+            val verticalOverlapRange = 50f
+            
+            return existing.any { platform ->
+                val horizontalOverlap = candidate.left < platform.right && candidate.right > platform.left
+                val verticalClose = kotlin.math.abs(candidate.y - platform.y) < verticalOverlapRange
+                horizontalOverlap && verticalClose
+            }
+        }
+        
+        private fun getMaxGapForDifficulty(difficulty: Difficulty): Float {
+            return when (difficulty) {
+                Difficulty.EASY -> GameConstants.MAX_HORIZONTAL_GAP_EASY
+                Difficulty.MEDIUM -> GameConstants.MAX_HORIZONTAL_GAP_MEDIUM
+                Difficulty.HARD -> GameConstants.MAX_HORIZONTAL_GAP_HARD
+                Difficulty.EXPERT -> GameConstants.MAX_HORIZONTAL_GAP_EXPERT
+            }
+        }
+        
+        private fun ensureReachability(candidate: Platform, previous: Platform?): Boolean {
+            if (previous == null) return true
+            
+            val horizontalGap = candidate.left - previous.right
+            val verticalDiff = previous.y - candidate.y
+            
+            return horizontalGap <= GameConstants.MAX_HORIZONTAL_JUMP_DISTANCE &&
+                   verticalDiff <= GameConstants.MAX_VERTICAL_JUMP_HEIGHT
         }
         
         @Suppress("UNUSED_PARAMETER")
