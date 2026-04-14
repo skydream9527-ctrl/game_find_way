@@ -44,7 +44,10 @@ fun GameCanvas(viewModel: GameViewModel) {
         
         drawRect(color = Color(theme.backgroundColor), size = size)
         
-        val viewportX = uiState.scrollX
+        val CHARACTER_SCREEN_X = canvasWidth * 0.15f
+        val CHARACTER_SCREEN_Y = canvasHeight * 0.5f
+        
+        val viewportX = uiState.character.position.x - (CHARACTER_SCREEN_X - offsetX) / scale
         
         for (platform in level.platforms) {
             val screenX = (platform.x - viewportX) * scale + offsetX
@@ -89,8 +92,8 @@ fun GameCanvas(viewModel: GameViewModel) {
             }
         }
         
-        val charScreenX = (uiState.character.position.x - viewportX) * scale + offsetX
-        val charScreenY = uiState.character.position.y * scale + offsetY
+        val charScreenX = CHARACTER_SCREEN_X
+        val charScreenY = CHARACTER_SCREEN_Y
         
         drawCircle(color = Color(0xFF4A90D9), radius = 15f * scale, center = Offset(charScreenX, charScreenY - 10f * scale))
         drawCircle(color = Color(0xFFFFE0B2), radius = 12f * scale, center = Offset(charScreenX, charScreenY - 25f * scale))
