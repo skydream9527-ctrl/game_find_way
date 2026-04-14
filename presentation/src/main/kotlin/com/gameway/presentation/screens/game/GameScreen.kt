@@ -21,16 +21,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gameway.domain.model.CharacterType
 import com.gameway.domain.model.GameState
 import com.gameway.presentation.screens.complete.LevelCompleteScreen
 import com.gameway.presentation.screens.complete.LevelFailedScreen
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun GameScreen(chapterId: Int, levelNumber: Int, onLevelComplete: () -> Unit, onLevelFailed: () -> Unit, onBackToMenu: () -> Unit, viewModel: GameViewModel = koinViewModel()) {
+fun GameScreen(
+    chapterId: Int,
+    levelNumber: Int,
+    characterType: CharacterType,
+    onLevelComplete: () -> Unit,
+    onLevelFailed: () -> Unit,
+    onBackToMenu: () -> Unit,
+    viewModel: GameViewModel = koinViewModel()
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    LaunchedEffect(chapterId, levelNumber) { viewModel.loadLevel(chapterId, levelNumber) }
+    LaunchedEffect(chapterId, levelNumber, characterType) { 
+        viewModel.loadLevel(chapterId, levelNumber, characterType) 
+    }
     
     Box(modifier = Modifier.fillMaxSize()) {
         GameCanvas(viewModel = viewModel)

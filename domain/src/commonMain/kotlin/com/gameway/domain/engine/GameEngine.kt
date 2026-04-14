@@ -3,6 +3,7 @@ package com.gameway.domain.engine
 import com.gameway.core.GameConstants
 import com.gameway.domain.model.ActivePowerUp
 import com.gameway.domain.model.Character
+import com.gameway.domain.model.CharacterType
 import com.gameway.domain.model.GameState
 import com.gameway.domain.model.Level
 import com.gameway.domain.model.PlatformType
@@ -22,11 +23,11 @@ class GameEngine(
     private var countdownEnd: Long = 0L
     private var previousGrounded: Boolean = false
     
-    fun startLevel(newLevel: Level) {
+    fun startLevel(newLevel: Level, characterType: CharacterType = CharacterType.CAT) {
         level = newLevel
         val firstPlatform = newLevel.platforms.firstOrNull()
         val startY = firstPlatform?.y ?: GameConstants.STARTING_PLATFORM_Y
-        character = Character.createDefault().copy(
+        character = Character.createDefault(characterType).copy(
             position = com.gameway.domain.model.Vector2(GameConstants.STARTING_POSITION_X, startY - 5f)
         )
         scrollX = 0f
@@ -153,7 +154,7 @@ class GameEngine(
     }
     
     fun restart() {
-        level?.let { startLevel(it) }
+        level?.let { startLevel(it, character.type) }
     }
     
     fun getCharacter(): Character = character

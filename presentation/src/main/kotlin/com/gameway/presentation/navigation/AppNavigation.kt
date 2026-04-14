@@ -1,10 +1,16 @@
 package com.gameway.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.gameway.domain.model.CharacterType
+import com.gameway.presentation.screens.character.CharacterSelectScreen
 import com.gameway.presentation.screens.splash.SplashScreen
 import com.gameway.presentation.screens.menu.MainMenuScreen
 import com.gameway.presentation.screens.chapter.ChapterSelectScreen
@@ -15,15 +21,16 @@ import com.gameway.presentation.screens.stats.StatsScreen
 sealed class Screen(val route: String) {
     data object Splash : Screen("splash")
     data object MainMenu : Screen("main_menu")
+    data object CharacterSelect : Screen("character_select")
     data object ChapterSelect : Screen("chapter_select")
     data class LevelSelect(val chapterId: Int) : Screen("level_select/$chapterId") {
         companion object {
             const val ROUTE_PATTERN = "level_select/{chapterId}"
         }
     }
-    data class Game(val chapterId: Int, val levelNumber: Int) : Screen("game/$chapterId/$levelNumber") {
+    data class Game(val chapterId: Int, val levelNumber: Int, val characterType: CharacterType) : Screen("game/$chapterId/$levelNumber/$characterType") {
         companion object {
-            const val ROUTE_PATTERN = "game/{chapterId}/{levelNumber}"
+            const val ROUTE_PATTERN = "game/{chapterId}/{levelNumber}/{characterType}"
         }
     }
     data object Stats : Screen("stats")
@@ -31,6 +38,8 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun AppNavigation(navController: NavHostController = rememberNavController()) {
+    var selectedCharacterType by remember { mutableStateOf(CharacterType.CAT) }
+    
     NavHost(navController = navController, startDestination = Screen.Splash.route) {
         composable(Screen.Splash.route) {
             SplashScreen(onNavigateToMenu = {
@@ -41,7 +50,19 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         composable(Screen.MainMenu.route) {
             MainMenuScreen(
                 onStartGame = { navController.navigate(Screen.ChapterSelect.route) },
+                onSelectCharacter = { navController.navigate(Screen.CharacterSelect.route) },
                 onViewStats = { navController.navigate(Screen.Stats.route) }
+            )
+        }
+        
+        composable(Screen.CharacterSelect.route) {
+            CharacterSelectScreen(
+                currentCharacter = selectedCharacterType,
+                onCharacterSelected = { type ->
+                    selectedCharacterType = type
+                    navController.popBackStack()
+                },
+                onBack = { navController.popBackStack() }
             )
         }
         
@@ -56,7 +77,9 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             val chapterId = backStackEntry.arguments?.getString("chapterId")?.toIntOrNull() ?: 1
             LevelSelectScreen(
                 chapterId = chapterId,
-                onLevelSelected = { levelNumber -> navController.navigate(Screen.Game(chapterId, levelNumber).route) },
+                onLevelSelected = { levelNumber -> 
+                    navController.navigate(Screen.Game(chapterId, levelNumber, selectedCharacterType).route) 
+                },
                 onBack = { navController.popBackStack() }
             )
         }
@@ -64,9 +87,12 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         composable(Screen.Game.ROUTE_PATTERN) { backStackEntry ->
             val chapterId = backStackEntry.arguments?.getString("chapterId")?.toIntOrNull() ?: 1
             val levelNumber = backStackEntry.arguments?.getString("levelNumber")?.toIntOrNull() ?: 1
+            val characterTypeString = backStackEntry.arguments?.getString("characterType") ?: "CAT"
+            val characterType = CharacterType.valueOf(characterTypeString)
             GameScreen(
                 chapterId = chapterId,
                 levelNumber = levelNumber,
+                characterType = characterType,
                 onLevelComplete = { navController.popBackStack() },
                 onLevelFailed = { navController.popBackStack() },
                 onBackToMenu = { navController.popBackStack(Screen.MainMenu.route, inclusive = false) }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gameway.domain.engine.GameEngine
 import com.gameway.domain.model.Character
+import com.gameway.domain.model.CharacterType
 import com.gameway.domain.model.GameState
 import com.gameway.domain.usecase.GetLevelUseCase
 import com.gameway.domain.usecase.SaveProgressUseCase
@@ -34,10 +35,10 @@ class GameViewModel(
     
     private var gameLoopActive = false
     
-    fun loadLevel(chapterId: Int, levelNumber: Int) {
+    fun loadLevel(chapterId: Int, levelNumber: Int, characterType: CharacterType) {
         viewModelScope.launch {
             val level = getLevelUseCase(chapterId, levelNumber)
-            gameEngine.startLevel(level)
+            gameEngine.startLevel(level, characterType)
             _uiState.value = _uiState.value.copy(
                 chapterId = chapterId, 
                 levelNumber = levelNumber, 
