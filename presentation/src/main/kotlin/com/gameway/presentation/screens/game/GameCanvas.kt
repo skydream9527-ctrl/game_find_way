@@ -13,7 +13,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gameway.core.GameConstants
 import com.gameway.domain.model.Chapter
+import com.gameway.domain.model.CharacterState
+import com.gameway.domain.model.CharacterType
 import com.gameway.domain.model.PowerUpType
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun GameCanvas(viewModel: GameViewModel) {
@@ -95,9 +100,62 @@ fun GameCanvas(viewModel: GameViewModel) {
         val charScreenX = CHARACTER_SCREEN_X
         val charScreenY = CHARACTER_SCREEN_Y
         
-        drawCircle(color = Color(0xFF4A90D9), radius = 15f * scale, center = Offset(charScreenX, charScreenY - 10f * scale))
-        drawCircle(color = Color(0xFFFFE0B2), radius = 12f * scale, center = Offset(charScreenX, charScreenY - 25f * scale))
-        drawCircle(color = Color(0xFF333333), radius = 2f * scale, center = Offset(charScreenX - 4f * scale, charScreenY - 26f * scale))
-        drawCircle(color = Color(0xFF333333), radius = 2f * scale, center = Offset(charScreenX + 4f * scale, charScreenY - 26f * scale))
+        drawCharacterWithAnimation(
+            character = uiState.character,
+            screenX = charScreenX,
+            screenY = charScreenY,
+            scale = scale,
+            animationFrame = uiState.animationFrame
+        )
     }
+}
+
+private fun calculateLegEnd(start: Offset, angle: Float, length: Float): Offset {
+    val radians = angle * PI / 180f
+    return Offset(
+        start.x + sin(radians) * length,
+        start.y + cos(radians) * length
+    )
+}
+
+private fun drawCharacterWithAnimation(
+    character: com.gameway.domain.model.Character,
+    screenX: Float,
+    screenY: Float,
+    scale: Float,
+    animationFrame: Int
+) {
+    val legAngle = if (character.state == CharacterState.RUNNING) {
+        val cycle = (animationFrame % 8) / 8f
+        sin(cycle * PI * 2) * 15f
+    } else {
+        0f
+    }
+    
+    val bodyColor = when (character.type) {
+        CharacterType.CAT -> Color(0xFFFFB74D)
+        CharacterType.DOG -> Color(0xFF8D6E63)
+        CharacterType.HORSE -> Color(0xFF9E9E9E)
+    }
+    
+    val headColor = when (character.type) {
+        CharacterType.CAT -> Color(0xFFFFE0B2)
+        CharacterType.DOG -> Color(0xFFD7CCC8)
+        CharacterType.HORSE -> Color(0xFFBDBDBD)
+    }
+    
+    val legColor = Color(0xFF333333)
+    
+    drawCircle(bodyColor, radius = 20f * scale, center = Offset(screenX, screenY - 15f * scale))
+    drawCircle(headColor, radius = 15f * scale, center = Offset(screenX, screenY - 35f * scale))
+    drawCircle(Color.Black, radius = 3f * scale, center = Offset(screenX - 6f * scale, screenY - 38f * scale))
+    drawCircle(Color.Black, radius = 3f * scale, center = Offset(screenX + 6f * scale, screenY - 38f * scale))
+    
+    val leftLegStart = Offset(screenX - 8f * scale, screenY)
+    val leftLegEnd = calculateLegEnd(leftLegStart, legAngle, 25f * scale)
+    drawLine(legColor, leftLegStart, leftLegEnd, strokeWidth = 6f * scale)
+    
+    val rightLegStart = Offset(screenX + 8f * scale, screenY)
+    val rightLegEnd = calculateLegEnd(rightLegStart, -legAngle, 25f * scale)
+    drawLine(legColor, rightLegStart, rightLegEnd, strokeWidth = 6f * scale)
 }

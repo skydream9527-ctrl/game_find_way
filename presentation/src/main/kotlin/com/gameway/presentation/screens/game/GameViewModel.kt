@@ -21,7 +21,8 @@ data class GameUiState(
     val score: Int = 0,
     val chapterId: Int = 1,
     val levelNumber: Int = 1,
-    val level: com.gameway.domain.model.Level? = null
+    val level: com.gameway.domain.model.Level? = null,
+    val animationFrame: Int = 0
 )
 
 class GameViewModel(
@@ -34,6 +35,7 @@ class GameViewModel(
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
     
     private var gameLoopActive = false
+    private var animationFrame = 0
     
     fun loadLevel(chapterId: Int, levelNumber: Int, characterType: CharacterType) {
         viewModelScope.launch {
@@ -56,12 +58,14 @@ class GameViewModel(
         viewModelScope.launch {
             while (gameLoopActive) {
                 gameEngine.update()
+                animationFrame++
                 val state = gameEngine.getGameState()
                 _uiState.value = _uiState.value.copy(
                     character = gameEngine.getCharacter(),
                     gameState = state,
                     scrollX = gameEngine.getScrollX(),
-                    score = gameEngine.getScore()
+                    score = gameEngine.getScore(),
+                    animationFrame = animationFrame
                 )
                 
                 if (state is GameState.Completed || state is GameState.Failed) {
