@@ -39,6 +39,11 @@ object GameConstants {
     const val STARTING_PLATFORM_Y = 350f
     const val MIN_PLATFORM_Y = 200f
     const val MAX_PLATFORM_Y = 500f
+    const val MIN_HORIZONTAL_GAP = 30f
+    const val MAX_HORIZONTAL_GAP_EASY = 120f
+    const val MAX_HORIZONTAL_GAP_MEDIUM = 160f
+    const val MAX_HORIZONTAL_GAP_HARD = 180f
+    const val MAX_HORIZONTAL_GAP_EXPERT = 200f
     const val POWERUP_Y_OFFSET = 30f
     const val COIN_Y_OFFSET = 25f
     const val MOVING_PLATFORM_PROBABILITY = 0.5f
