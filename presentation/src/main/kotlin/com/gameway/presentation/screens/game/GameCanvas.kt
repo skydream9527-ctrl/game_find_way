@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gameway.core.GameConstants
@@ -111,14 +112,14 @@ fun GameCanvas(viewModel: GameViewModel) {
 }
 
 private fun calculateLegEnd(start: Offset, angle: Float, length: Float): Offset {
-    val radians = angle * PI / 180f
+    val radians = (angle * PI / 180f).toFloat()
     return Offset(
-        start.x + sin(radians) * length,
-        start.y + cos(radians) * length
+        start.x + sin(radians).toFloat() * length,
+        start.y + cos(radians).toFloat() * length
     )
 }
 
-private fun drawCharacterWithAnimation(
+private fun DrawScope.drawCharacterWithAnimation(
     character: com.gameway.domain.model.Character,
     screenX: Float,
     screenY: Float,
@@ -127,7 +128,7 @@ private fun drawCharacterWithAnimation(
 ) {
     val legAngle = if (character.state == CharacterState.RUNNING) {
         val cycle = (animationFrame % 8) / 8f
-        sin(cycle * PI * 2) * 15f
+        (sin(cycle * PI * 2) * 15f).toFloat()
     } else {
         0f
     }
