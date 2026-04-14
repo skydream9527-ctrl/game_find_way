@@ -22,7 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun MainMenuScreen(onStartGame: () -> Unit, onViewStats: () -> Unit) {
+fun MainMenuScreen(
+    onStartGame: () -> Unit,
+    onSelectCharacter: () -> Unit,
+    onViewStats: () -> Unit
+) {
     Box(
         modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF1A237E), Color(0xFF4A148C)))),
         contentAlignment = Alignment.Center
@@ -38,6 +42,14 @@ fun MainMenuScreen(onStartGame: () -> Unit, onViewStats: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(0.7f).height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
             ) { Text("开始游戏", fontSize = 18.sp) }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Button(
+                onClick = onSelectCharacter,
+                modifier = Modifier.fillMaxWidth(0.7f).height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C27B0))
+            ) { Text("选择角色", fontSize = 16.sp) }
             
             Spacer(modifier = Modifier.height(16.dp))
             
