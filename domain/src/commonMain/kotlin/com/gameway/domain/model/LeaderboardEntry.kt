@@ -1,5 +1,8 @@
 package com.gameway.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class LeaderboardEntry(
     val id: String,
     val playerName: String,
