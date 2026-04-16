@@ -10,12 +10,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gameway.domain.model.CharacterType
+import org.koin.androidx.compose.koinViewModel
 import com.gameway.presentation.screens.character.CharacterSelectScreen
 import com.gameway.presentation.screens.splash.SplashScreen
 import com.gameway.presentation.screens.menu.MainMenuScreen
 import com.gameway.presentation.screens.chapter.ChapterSelectScreen
 import com.gameway.presentation.screens.level.LevelSelectScreen
 import com.gameway.presentation.screens.game.GameScreen
+import com.gameway.presentation.screens.leaderboard.LeaderboardScreen
+import com.gameway.presentation.screens.leaderboard.LeaderboardViewModel
 import com.gameway.presentation.screens.stats.StatsScreen
 
 sealed class Screen(val route: String) {
@@ -34,6 +37,7 @@ sealed class Screen(val route: String) {
         }
     }
     data object Stats : Screen("stats")
+    data object Leaderboard : Screen("leaderboard")
 }
 
 @Composable
@@ -51,7 +55,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             MainMenuScreen(
                 onStartGame = { navController.navigate(Screen.ChapterSelect.route) },
                 onSelectCharacter = { navController.navigate(Screen.CharacterSelect.route) },
-                onViewStats = { navController.navigate(Screen.Stats.route) }
+                onViewStats = { navController.navigate(Screen.Stats.route) },
+                onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) }
             )
         }
         
@@ -101,6 +106,13 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         
         composable(Screen.Stats.route) {
             StatsScreen(onBack = { navController.popBackStack() })
+        }
+        
+        composable(Screen.Leaderboard.route) {
+            LeaderboardScreen(
+                viewModel = koinViewModel<LeaderboardViewModel>(),
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

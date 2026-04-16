@@ -12,13 +12,20 @@ import com.gameway.domain.model.Level
 import com.gameway.domain.model.PlatformType
 import com.gameway.domain.model.PowerUpType
 import com.gameway.domain.model.Projectile
+import com.gameway.domain.usecase.SaveScoreUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class GameEngine(
+    private val saveScoreUseCase: SaveScoreUseCase,
     private val soundManager: SoundManager = SoundManager(),
     private val soundPlayer: SoundPlayer? = null
 ) {
     
     private val bgmManager = BGMManager()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var gameState: GameState = GameState.Loading
     private var character: Character = Character.createDefault()
     private var level: Level? = null
@@ -150,6 +157,7 @@ class GameEngine(
         if (lastPlatform != null && character.position.x > lastPlatform.x + lastPlatform.width) {
             soundManager.play(GameSound.COMPLETE, soundPlayer)
             gameState = GameState.Completed(score, character.coinsCollected)
+            scope.launch { saveScoreUseCase(score, chapter, levelNumber) }
         }
     }
 
@@ -188,6 +196,7 @@ class GameEngine(
             triggerScreenShake(10f)
             soundManager.play(GameSound.COMPLETE, soundPlayer)
             gameState = GameState.Completed(score, character.coinsCollected)
+            scope.launch { saveScoreUseCase(score, chapter, levelNumber) }
             return
         }
 

@@ -8,6 +8,7 @@ import com.gameway.domain.model.CharacterType
 import com.gameway.domain.model.GameState
 import com.gameway.domain.usecase.GetLevelUseCase
 import com.gameway.domain.usecase.SaveProgressUseCase
+import com.gameway.domain.usecase.SaveScoreUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +33,8 @@ data class GameUiState(
 class GameViewModel(
     private val getLevelUseCase: GetLevelUseCase,
     private val saveProgressUseCase: SaveProgressUseCase,
-    private val gameEngine: GameEngine = GameEngine()
+    private val saveScoreUseCase: SaveScoreUseCase,
+    private val gameEngine: GameEngine = GameEngine(saveScoreUseCase)
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(GameUiState())

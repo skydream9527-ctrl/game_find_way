@@ -25,7 +25,8 @@ import androidx.compose.ui.unit.sp
 fun MainMenuScreen(
     onStartGame: () -> Unit,
     onSelectCharacter: () -> Unit,
-    onViewStats: () -> Unit
+    onViewStats: () -> Unit,
+    onNavigateToLeaderboard: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF1A237E), Color(0xFF4A148C)))),
@@ -58,6 +59,14 @@ fun MainMenuScreen(
                 modifier = Modifier.fillMaxWidth(0.7f).height(48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
             ) { Text("角色属性", fontSize = 16.sp) }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Button(
+                onClick = onNavigateToLeaderboard,
+                modifier = Modifier.fillMaxWidth(0.7f).height(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800))
+            ) { Text("排行榜", fontSize = 14.sp) }
             
             Spacer(modifier = Modifier.height(16.dp))
             
