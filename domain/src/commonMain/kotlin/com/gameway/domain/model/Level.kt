@@ -28,11 +28,14 @@ data class Level(
             seed: Long = System.currentTimeMillis()
         ): Level {
             val random = Random(seed)
-            val difficulty = getDifficultyForLevel(chapterId, levelNumber)
+            val isBossLevel = levelNumber % 10 == 0
+            val difficulty = if (isBossLevel) Difficulty.HARD else getDifficultyForLevel(chapterId, levelNumber)
             val platformCount = getPlatformCount(difficulty, random)
-            val platforms = generatePlatforms(platformCount, difficulty, random)
+            val platforms = generatePlatforms(platformCount, difficulty, random, isBossLevel)
             val powerUps = generatePowerUps(platforms, difficulty, random, chapterId, levelNumber)
             val coins = generateCoins(platforms, random)
+            val boss = if (isBossLevel) Boss.create(chapterId) else null
+            val type = if (isBossLevel) LevelType.BOSS else LevelType.NORMAL
             
             return Level(
                 id = chapterId * 100 + levelNumber,
@@ -43,8 +46,8 @@ data class Level(
                 powerUps = powerUps,
                 coins = coins,
                 targetScore = coins.size * GameConstants.COIN_SCORE + powerUps.size * GameConstants.POWERUP_SCORE,
-                type = LevelType.NORMAL,
-                boss = null
+                type = type,
+                boss = boss
             )
         }
         
@@ -68,7 +71,7 @@ data class Level(
             return random.nextInt(min, max + 1)
         }
         
-        private fun generatePlatforms(count: Int, difficulty: Difficulty, random: Random): List<Platform> {
+        private fun generatePlatforms(count: Int, difficulty: Difficulty, random: Random, isBossLevel: Boolean = false): List<Platform> {
             val platforms = mutableListOf<Platform>()
             var x = GameConstants.STARTING_POSITION_X
             
@@ -83,7 +86,8 @@ data class Level(
                         startX = x,
                         difficulty = difficulty,
                         random = random,
-                        previous = platforms.lastOrNull()
+                        previous = platforms.lastOrNull(),
+                        isBossLevel = isBossLevel
                     )
                     
                     if (!hasOverlap(candidate, platforms) && ensureReachability(candidate, platforms.lastOrNull())) {
@@ -99,7 +103,7 @@ data class Level(
                         Difficulty.MEDIUM -> 80f
                         Difficulty.HARD -> 60f
                         Difficulty.EXPERT -> 50f
-                    }
+                    }.let { if (isBossLevel) it * 1.5f else it }
                     val previous = platforms.lastOrNull()
                     val safeX = previous?.right?.plus(GameConstants.MIN_HORIZONTAL_GAP) ?: x
                     val safeY = previous?.y ?: GameConstants.STARTING_PLATFORM_Y
@@ -108,7 +112,7 @@ data class Level(
                         id = i,
                         x = safeX,
                         y = safeY.coerceIn(GameConstants.MIN_PLATFORM_Y, GameConstants.MAX_PLATFORM_Y),
-                        width = width.coerceAtLeast(60f),
+                        width = width.coerceAtLeast(60f).let { if (isBossLevel) it * 1.5f else it },
                         type = PlatformType.STATIC,
                         moveRange = 0f,
                         moveSpeed = 0f,
@@ -128,14 +132,15 @@ data class Level(
             startX: Float,
             difficulty: Difficulty,
             random: Random,
-            previous: Platform?
+            previous: Platform?,
+            isBossLevel: Boolean = false
         ): Platform {
             val width = when (difficulty) {
                 Difficulty.EASY -> random.nextFloat(80f, 120f)
                 Difficulty.MEDIUM -> random.nextFloat(60f, 100f)
                 Difficulty.HARD -> random.nextFloat(40f, 80f)
                 Difficulty.EXPERT -> random.nextFloat(30f, 60f)
-            }
+            }.let { if (isBossLevel) it * 1.5f else it }
             
             val yVariation = if (previous == null) {
                 0f
