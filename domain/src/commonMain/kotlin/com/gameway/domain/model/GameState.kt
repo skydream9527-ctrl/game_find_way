@@ -4,6 +4,7 @@ sealed interface GameState {
     data object Loading : GameState
     data object Countdown : GameState
     data object Playing : GameState
+    data class BossActive(val survivalTime: Float) : GameState
     data object Paused : GameState
     data class Completed(val score: Int, val coinsCollected: Int) : GameState
     data class Failed(val reason: String) : GameState
