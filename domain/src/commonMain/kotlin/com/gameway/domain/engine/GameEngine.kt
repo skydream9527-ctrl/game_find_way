@@ -29,6 +29,7 @@ class GameEngine(
     private var boss: Boss? = null
     private var chapter: Int = 1
     private var levelNumber: Int = 1
+    private var screenShakeIntensity = 0f
     
     fun startLevel(newLevel: Level, characterType: CharacterType = CharacterType.CAT, bossLevel: Boss? = null, chapterNum: Int = 1, levelNum: Int = 1) {
         level = newLevel
@@ -168,6 +169,7 @@ class GameEngine(
                 character = removeShield(character)
             } else {
                 character = character.copy(health = character.health - collision.damage)
+                triggerScreenShake(20f)
                 if (character.health <= 0) {
                     soundManager.play(GameSound.FAIL, soundPlayer)
                     gameState = GameState.Failed("被Boss攻击命中！")
@@ -177,6 +179,7 @@ class GameEngine(
         }
 
         if (BossEngine.checkSurvival(survivalTime)) {
+            triggerScreenShake(10f)
             soundManager.play(GameSound.COMPLETE, soundPlayer)
             gameState = GameState.Completed(score, character.coinsCollected)
             return
@@ -223,4 +226,17 @@ class GameEngine(
     fun getBoss(): Boss? = boss
     fun getProjectiles(): List<Projectile> = projectiles
     fun getSurvivalTime(): Float = survivalTime
+    fun getScreenShakeIntensity(): Float = screenShakeIntensity
+
+    fun triggerScreenShake(intensity: Float) {
+        screenShakeIntensity = intensity
+    }
+
+    fun updateScreenShake() {
+        if (screenShakeIntensity > 0.5f) {
+            screenShakeIntensity *= 0.9f
+        } else {
+            screenShakeIntensity = 0f
+        }
+    }
 }
