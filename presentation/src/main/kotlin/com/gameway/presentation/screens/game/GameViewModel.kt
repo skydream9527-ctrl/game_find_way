@@ -22,7 +22,10 @@ data class GameUiState(
     val chapterId: Int = 1,
     val levelNumber: Int = 1,
     val level: com.gameway.domain.model.Level? = null,
-    val animationFrame: Int = 0
+    val animationFrame: Int = 0,
+    val boss: com.gameway.domain.model.Boss? = null,
+    val projectiles: List<com.gameway.domain.model.Projectile> = emptyList(),
+    val survivalTime: Float = 0f
 )
 
 class GameViewModel(
@@ -65,7 +68,10 @@ class GameViewModel(
                     gameState = state,
                     scrollX = gameEngine.getScrollX(),
                     score = gameEngine.getScore(),
-                    animationFrame = animationFrame
+                    animationFrame = animationFrame,
+                    boss = gameEngine.getBoss(),
+                    projectiles = gameEngine.getProjectiles(),
+                    survivalTime = gameEngine.getSurvivalTime()
                 )
                 
                 if (state is GameState.Completed || state is GameState.Failed) {

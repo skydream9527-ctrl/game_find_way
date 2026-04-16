@@ -220,4 +220,7 @@ class GameEngine(
     fun getScrollX(): Float = scrollX
     fun getScore(): Int = score
     fun getLevel(): Level? = level
+    fun getBoss(): Boss? = boss
+    fun getProjectiles(): List<Projectile> = projectiles
+    fun getSurvivalTime(): Float = survivalTime
 }

@@ -54,4 +54,5 @@ object GameConstants {
     const val BOSS_SPAWN_Y = 300f
     const val CHARACTER_RADIUS = 20f
     const val BOSS_DASH_RADIUS = 40f
+    const val BOSS_SURVIVAL_TIME = 30f
 }

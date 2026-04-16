@@ -1,5 +1,6 @@
 package com.gameway.presentation.screens.game
 
+import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,13 +11,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gameway.core.GameConstants
+import com.gameway.domain.model.Boss
 import com.gameway.domain.model.Chapter
 import com.gameway.domain.model.CharacterState
 import com.gameway.domain.model.CharacterType
+import com.gameway.domain.model.LevelType
 import com.gameway.domain.model.PowerUpType
+import com.gameway.domain.model.Projectile
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -25,6 +30,7 @@ import kotlin.math.sin
 fun GameCanvas(viewModel: GameViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val level = uiState.level
+    val boss = uiState.boss
     
     if (level == null) return
     
@@ -108,6 +114,15 @@ fun GameCanvas(viewModel: GameViewModel) {
             scale = scale,
             animationFrame = uiState.animationFrame
         )
+        
+        if (level.type == LevelType.BOSS && boss != null) {
+            drawBoss(boss, viewportX, scale, offsetX, offsetY)
+            drawProjectiles(uiState.projectiles, viewportX, scale, offsetX, offsetY)
+            if (boss.laserActive) {
+                drawLaser(boss.position, boss.laserAngle, viewportX, scale, offsetX, offsetY)
+            }
+            drawSurvivalTimer(uiState.survivalTime, GameConstants.BOSS_SURVIVAL_TIME)
+        }
     }
 }
 
@@ -159,4 +174,58 @@ private fun DrawScope.drawCharacterWithAnimation(
     val rightLegStart = Offset(screenX + 8f * scale, screenY)
     val rightLegEnd = calculateLegEnd(rightLegStart, -legAngle, 25f * scale)
     drawLine(legColor, rightLegStart, rightLegEnd, strokeWidth = 6f * scale)
+}
+
+private fun DrawScope.drawBoss(boss: Boss, viewportX: Float, scale: Float, offsetX: Float, offsetY: Float) {
+    val screenX = (boss.position.x - viewportX) * scale + offsetX
+    val screenY = boss.position.y * scale + offsetY
+
+    drawContext.canvas.nativeCanvas.drawText(
+        boss.config.emoji,
+        screenX,
+        screenY,
+        Paint().apply {
+            textSize = 60f * scale
+            textAlign = Paint.Align.CENTER
+        }
+    )
+}
+
+private fun DrawScope.drawProjectiles(projectiles: List<Projectile>, viewportX: Float, scale: Float, offsetX: Float, offsetY: Float) {
+    for (projectile in projectiles) {
+        val screenX = (projectile.position.x - viewportX) * scale + offsetX
+        val screenY = projectile.position.y * scale + offsetY
+        drawCircle(
+            Color.Red,
+            radius = projectile.radius * scale,
+            center = Offset(screenX, screenY)
+        )
+    }
+}
+
+private fun DrawScope.drawLaser(bossPosition: com.gameway.domain.model.Vector2, angle: Float, viewportX: Float, scale: Float, offsetX: Float, offsetY: Float) {
+    val startX = (bossPosition.x - viewportX) * scale + offsetX
+    val startY = bossPosition.y * scale + offsetY
+    val endX = startX + cos(angle) * 2000f * scale
+    val endY = startY + sin(angle) * 2000f * scale
+
+    drawLine(Color.Red, Offset(startX, startY), Offset(endX, endY), strokeWidth = 8f * scale, cap = StrokeCap.Round)
+    drawLine(Color.Yellow.copy(alpha = 0.5f), Offset(startX, startY), Offset(endX, endY), strokeWidth = 16f * scale, cap = StrokeCap.Round)
+}
+
+private fun DrawScope.drawSurvivalTimer(currentTime: Float, totalTime: Float) {
+    val remaining = (totalTime - currentTime).coerceAtLeast(0f)
+    val text = "存活时间: ${remaining.toInt()}秒"
+
+    drawContext.canvas.nativeCanvas.drawText(
+        text,
+        size.width / 2,
+        50f,
+        Paint().apply {
+            textSize = 32f
+            color = android.graphics.Color.WHITE
+            textAlign = Paint.Align.CENTER
+            setShadowLayer(4f, 2f, 2f, android.graphics.Color.BLACK)
+        }
+    )
 }
