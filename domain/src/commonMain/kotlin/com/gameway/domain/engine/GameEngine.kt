@@ -2,12 +2,14 @@ package com.gameway.domain.engine
 
 import com.gameway.core.GameConstants
 import com.gameway.domain.model.ActivePowerUp
+import com.gameway.domain.model.Boss
 import com.gameway.domain.model.Character
 import com.gameway.domain.model.CharacterType
 import com.gameway.domain.model.GameState
 import com.gameway.domain.model.Level
 import com.gameway.domain.model.PlatformType
 import com.gameway.domain.model.PowerUpType
+import com.gameway.domain.model.Projectile
 
 class GameEngine(
     private val soundManager: SoundManager = SoundManager(),
@@ -22,8 +24,13 @@ class GameEngine(
     private var lastUpdateTime: Long = 0L
     private var countdownEnd: Long = 0L
     private var previousGrounded: Boolean = false
+    private var survivalTime: Float = 0f
+    private var projectiles: List<Projectile> = emptyList()
+    private var boss: Boss? = null
+    private var chapter: Int = 1
+    private var levelNumber: Int = 1
     
-    fun startLevel(newLevel: Level, characterType: CharacterType = CharacterType.CAT) {
+    fun startLevel(newLevel: Level, characterType: CharacterType = CharacterType.CAT, bossLevel: Boss? = null, chapterNum: Int = 1, levelNum: Int = 1) {
         level = newLevel
         val firstPlatform = newLevel.platforms.firstOrNull()
         val startY = firstPlatform?.y ?: GameConstants.STARTING_PLATFORM_Y
@@ -32,6 +39,11 @@ class GameEngine(
         )
         scrollX = 0f
         score = 0
+        survivalTime = 0f
+        projectiles = emptyList()
+        boss = bossLevel
+        chapter = chapterNum
+        levelNumber = levelNum
         gameState = GameState.Countdown
         countdownEnd = System.currentTimeMillis() + GameConstants.COUNTDOWN_DURATION
         lastUpdateTime = System.currentTimeMillis()
@@ -49,11 +61,14 @@ class GameEngine(
         when (gameState) {
             is GameState.Countdown -> {
                 if (currentTime >= countdownEnd) {
-                    gameState = GameState.Playing
+                    gameState = if (boss != null) GameState.BossActive(0f) else GameState.Playing
                 }
             }
             is GameState.Playing -> {
                 updateGame(deltaTime, currentTime)
+            }
+            is GameState.BossActive -> {
+                updateBossBattle(deltaTime.toFloat())
             }
             else -> {}
         }
@@ -130,10 +145,53 @@ class GameEngine(
             gameState = GameState.Completed(score, character.coinsCollected)
         }
     }
+
+    private fun updateBossBattle(deltaTime: Float) {
+        val currentBoss = boss ?: return
+
+        survivalTime += deltaTime
+
+        val bossResult = BossEngine.update(currentBoss, character, deltaTime)
+        boss = bossResult.boss
+        projectiles = bossResult.projectiles
+
+        val collision = CollisionDetector.checkBossCollisions(
+            character,
+            currentBoss,
+            projectiles,
+            currentBoss.laserActive,
+            currentBoss.laserAngle
+        )
+
+        if (collision is CollisionResult.Hit) {
+            if (character.hasShield) {
+                character = removeShield(character)
+            } else {
+                character = character.copy(health = character.health - collision.damage)
+                if (character.health <= 0) {
+                    soundManager.play(GameSound.FAIL, soundPlayer)
+                    gameState = GameState.Failed("被Boss攻击命中！")
+                    return
+                }
+            }
+        }
+
+        if (BossEngine.checkSurvival(survivalTime)) {
+            soundManager.play(GameSound.COMPLETE, soundPlayer)
+            gameState = GameState.Completed(score, character.coinsCollected)
+            return
+        }
+
+        gameState = GameState.BossActive(survivalTime)
+    }
+
+    private fun removeShield(char: Character): Character = char.copy(
+        activePowerUps = char.activePowerUps.filter { it.type != PowerUpType.SHIELD }
+    )
     
     fun jump() {
-        if (gameState !is GameState.Playing) return
-        
+        if (gameState !is GameState.Playing && gameState !is GameState.BossActive) return
+
         if (character.isGrounded || character.jumpCount < character.maxJumps) {
             soundManager.play(GameSound.JUMP, soundPlayer)
             character = PhysicsSystem.applyJump(character)
