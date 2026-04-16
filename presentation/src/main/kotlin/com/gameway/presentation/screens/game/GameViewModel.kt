@@ -25,7 +25,8 @@ data class GameUiState(
     val animationFrame: Int = 0,
     val boss: com.gameway.domain.model.Boss? = null,
     val projectiles: List<com.gameway.domain.model.Projectile> = emptyList(),
-    val survivalTime: Float = 0f
+    val survivalTime: Float = 0f,
+    val screenShakeIntensity: Float = 0f
 )
 
 class GameViewModel(
@@ -71,7 +72,8 @@ class GameViewModel(
                     animationFrame = animationFrame,
                     boss = gameEngine.getBoss(),
                     projectiles = gameEngine.getProjectiles(),
-                    survivalTime = gameEngine.getSurvivalTime()
+                    survivalTime = gameEngine.getSurvivalTime(),
+                    screenShakeIntensity = gameEngine.getScreenShakeIntensity()
                 )
                 
                 if (state is GameState.Completed || state is GameState.Failed) {

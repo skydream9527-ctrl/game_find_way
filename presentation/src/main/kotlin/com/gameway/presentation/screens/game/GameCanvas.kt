@@ -5,9 +5,12 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -31,13 +34,24 @@ fun GameCanvas(viewModel: GameViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val level = uiState.level
     val boss = uiState.boss
-    
+
+    val screenShakeController = remember { ScreenShakeController() }
+
+    LaunchedEffect(uiState.screenShakeIntensity) {
+        if (uiState.screenShakeIntensity > 0) {
+            screenShakeController.trigger(uiState.screenShakeIntensity)
+        }
+    }
+
+    val (shakeX, shakeY) = screenShakeController.update()
+
     if (level == null) return
-    
+
     val chapter = Chapter.getAllChapters().find { it.id == level.chapterId } ?: Chapter.getAllChapters().first()
     val theme = chapter.theme
-    
+
     Canvas(
+        modifier = Modifier.fillMaxSize().offset(x = shakeX.dp, y = shakeY.dp).pointerInput(Unit) {
         modifier = Modifier.fillMaxSize().pointerInput(Unit) {
             detectTapGestures(
                 onTap = { viewModel.onTap() }
