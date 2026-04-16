@@ -1,10 +1,12 @@
 package com.gameway.domain.engine
 
 import com.gameway.core.GameConstants
+import com.gameway.data.audio.BGMManager
 import com.gameway.domain.model.ActivePowerUp
 import com.gameway.domain.model.Boss
 import com.gameway.domain.model.Character
 import com.gameway.domain.model.CharacterType
+import com.gameway.domain.model.Difficulty
 import com.gameway.domain.model.GameState
 import com.gameway.domain.model.Level
 import com.gameway.domain.model.PlatformType
@@ -16,6 +18,7 @@ class GameEngine(
     private val soundPlayer: SoundPlayer? = null
 ) {
     
+    private val bgmManager = BGMManager()
     private var gameState: GameState = GameState.Loading
     private var character: Character = Character.createDefault()
     private var level: Level? = null
@@ -64,12 +67,15 @@ class GameEngine(
                 if (currentTime >= countdownEnd) {
                     gameState = if (boss != null) GameState.BossActive(0f) else GameState.Playing
                 }
+                bgmManager.onGameStateChanged(gameState)
             }
             is GameState.Playing -> {
                 updateGame(deltaTime, currentTime)
+                bgmManager.onGameStateChanged(gameState)
             }
             is GameState.BossActive -> {
                 updateBossBattle(deltaTime.toFloat())
+                bgmManager.onGameStateChanged(gameState)
             }
             else -> {}
         }
@@ -204,6 +210,7 @@ class GameEngine(
     fun pause() {
         if (gameState is GameState.Playing) {
             gameState = GameState.Paused
+            bgmManager.onGameStateChanged(gameState)
         }
     }
     
@@ -211,11 +218,16 @@ class GameEngine(
         if (gameState is GameState.Paused) {
             gameState = GameState.Playing
             lastUpdateTime = System.currentTimeMillis()
+            bgmManager.onGameStateChanged(gameState)
         }
     }
     
     fun restart() {
         level?.let { startLevel(it, character.type) }
+    }
+    
+    fun setDifficulty(difficulty: Difficulty) {
+        bgmManager.setDifficulty(difficulty)
     }
     
     fun getCharacter(): Character = character
