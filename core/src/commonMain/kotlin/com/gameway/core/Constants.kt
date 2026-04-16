@@ -49,4 +49,7 @@ object GameConstants {
     const val MOVING_PLATFORM_PROBABILITY = 0.5f
     const val PLATFORM_MIN_MOVE_SPEED = 0.5f
     const val PLATFORM_MAX_MOVE_SPEED = 1.5f
+
+    const val BOSS_SPAWN_X = 600f
+    const val BOSS_SPAWN_Y = 300f
 }

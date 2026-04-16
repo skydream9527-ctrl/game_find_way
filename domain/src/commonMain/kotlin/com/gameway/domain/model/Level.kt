@@ -16,7 +16,10 @@ data class Level(
     val platforms: List<Platform>,
     val powerUps: List<PowerUp>,
     val coins: List<Coin>,
-    val targetScore: Int
+    val targetScore: Int,
+    val type: LevelType,
+    val boss: Boss?,
+    val survivalTime: Float = 0f
 ) {
     companion object {
         fun generate(
@@ -39,7 +42,9 @@ data class Level(
                 platforms = platforms,
                 powerUps = powerUps,
                 coins = coins,
-                targetScore = coins.size * GameConstants.COIN_SCORE + powerUps.size * GameConstants.POWERUP_SCORE
+                targetScore = coins.size * GameConstants.COIN_SCORE + powerUps.size * GameConstants.POWERUP_SCORE,
+                type = LevelType.NORMAL,
+                boss = null
             )
         }
         
