@@ -6,7 +6,9 @@ import com.gameway.data.repository.GameProgressRepositoryImpl
 import com.gameway.data.repository.LeaderboardRepositoryImpl
 import com.gameway.data.repository.MatchRepositoryImpl
 import com.gameway.data.repository.SettingsRepositoryImpl
+import com.gameway.data.repository.SkinRepositoryImpl
 import com.gameway.domain.repository.GameProgressRepository
+import com.gameway.domain.repository.SkinRepository
 import com.gameway.domain.repository.LeaderboardRepository
 import com.gameway.domain.repository.SettingsRepository
 import com.gameway.domain.repository.FriendRepository
@@ -23,11 +25,14 @@ import com.gameway.domain.usecase.GetLeaderboardUseCase
 import com.gameway.domain.usecase.SaveProgressUseCase
 import com.gameway.domain.usecase.SaveScoreUseCase
 import com.gameway.domain.usecase.SubmitScoreUseCase
+import com.gameway.domain.usecase.EquipSkinUseCase
+import com.gameway.domain.usecase.PurchaseSkinUseCase
 import com.gameway.domain.engine.MatchManager
 import com.gameway.presentation.screens.game.GameViewModel
 import com.gameway.presentation.screens.leaderboard.LeaderboardViewModel
 import com.gameway.presentation.screens.friend.FriendViewModel
 import com.gameway.presentation.screens.match.MatchViewModel
+import com.gameway.presentation.screens.skinstore.SkinStoreViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
@@ -38,6 +43,7 @@ val dataModule = module {
     single<LeaderboardRepository> { LeaderboardRepositoryImpl(get()) }
     factory<FriendRepository> { FriendRepositoryImpl(get()) }
     factory<MatchRepository> { MatchRepositoryImpl(get()) }
+    factory<SkinRepository> { SkinRepositoryImpl(get()) }
 }
 
 val domainModule = module {
@@ -54,6 +60,9 @@ val domainModule = module {
     factory { CreateMatchUseCase(get()) }
     factory { AcceptMatchUseCase(get()) }
     factory { SubmitScoreUseCase(get()) }
+    factory { PurchaseSkinUseCase(get()) }
+    factory { EquipSkinUseCase(get()) }
+    factory { SkinStoreManager(get()) }
 }
 
 val presentationModule = module {
@@ -61,4 +70,5 @@ val presentationModule = module {
     factory { LeaderboardViewModel(get()) }
     factory { FriendViewModel(get(), get(), get(), get()) }
     factory { MatchViewModel(get(), get(), get(), get(), get()) }
+    factory { SkinStoreViewModel(get(), get(), get()) }
 }
