@@ -26,7 +26,8 @@ fun MainMenuScreen(
     onStartGame: () -> Unit,
     onSelectCharacter: () -> Unit,
     onViewStats: () -> Unit,
-    onNavigateToLeaderboard: () -> Unit
+    onNavigateToLeaderboard: () -> Unit,
+    onNavigateToFriend: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF1A237E), Color(0xFF4A148C)))),
@@ -67,6 +68,14 @@ fun MainMenuScreen(
                 modifier = Modifier.fillMaxWidth(0.7f).height(40.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800))
             ) { Text("排行榜", fontSize = 14.sp) }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Button(
+                onClick = onNavigateToFriend,
+                modifier = Modifier.fillMaxWidth(0.7f).height(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63))
+            ) { Text("好友", fontSize = 14.sp) }
             
             Spacer(modifier = Modifier.height(16.dp))
             

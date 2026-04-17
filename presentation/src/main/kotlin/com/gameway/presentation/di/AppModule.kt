@@ -1,19 +1,26 @@
 package com.gameway.presentation.di
 
 import com.gameway.data.local.DataStoreManager
+import com.gameway.data.repository.FriendRepositoryImpl
 import com.gameway.data.repository.GameProgressRepositoryImpl
 import com.gameway.data.repository.LeaderboardRepositoryImpl
 import com.gameway.data.repository.SettingsRepositoryImpl
 import com.gameway.domain.repository.GameProgressRepository
 import com.gameway.domain.repository.LeaderboardRepository
 import com.gameway.domain.repository.SettingsRepository
+import com.gameway.domain.repository.FriendRepository
 import com.gameway.domain.usecase.GetCharacterStatsUseCase
 import com.gameway.domain.usecase.GetChaptersUseCase
+import com.gameway.domain.usecase.GetFriendsUseCase
+import com.gameway.domain.usecase.AddFriendUseCase
+import com.gameway.domain.usecase.RemoveFriendUseCase
 import com.gameway.domain.usecase.GetLevelUseCase
+import com.gameway.domain.usecase.GetLeaderboardUseCase
 import com.gameway.domain.usecase.SaveProgressUseCase
 import com.gameway.domain.usecase.SaveScoreUseCase
 import com.gameway.presentation.screens.game.GameViewModel
 import com.gameway.presentation.screens.leaderboard.LeaderboardViewModel
+import com.gameway.presentation.screens.friend.FriendViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
@@ -22,6 +29,7 @@ val dataModule = module {
     single<GameProgressRepository> { GameProgressRepositoryImpl(get()) }
     single<SettingsRepository> { SettingsRepositoryImpl(get()) }
     single<LeaderboardRepository> { LeaderboardRepositoryImpl(get()) }
+    factory<FriendRepository> { FriendRepositoryImpl(get()) }
 }
 
 val domainModule = module {
@@ -30,9 +38,14 @@ val domainModule = module {
     factory { SaveProgressUseCase(get()) }
     factory { GetCharacterStatsUseCase(get()) }
     factory { SaveScoreUseCase(get()) }
+    factory { GetFriendsUseCase(get()) }
+    factory { AddFriendUseCase(get()) }
+    factory { RemoveFriendUseCase(get()) }
+    factory { GetLeaderboardUseCase(get()) }
 }
 
 val presentationModule = module {
     viewModel { GameViewModel(get(), get(), get(), GameEngine(get())) }
     factory { LeaderboardViewModel(get()) }
+    factory { FriendViewModel(get(), get(), get(), get()) }
 }
