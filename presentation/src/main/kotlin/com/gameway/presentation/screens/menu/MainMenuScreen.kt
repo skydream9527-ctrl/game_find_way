@@ -27,7 +27,8 @@ fun MainMenuScreen(
     onSelectCharacter: () -> Unit,
     onViewStats: () -> Unit,
     onNavigateToLeaderboard: () -> Unit,
-    onNavigateToFriend: () -> Unit
+    onNavigateToFriend: () -> Unit,
+    onNavigateToMatch: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF1A237E), Color(0xFF4A148C)))),
@@ -76,6 +77,14 @@ fun MainMenuScreen(
                 modifier = Modifier.fillMaxWidth(0.7f).height(40.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63))
             ) { Text("好友", fontSize = 14.sp) }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Button(
+                onClick = onNavigateToMatch,
+                modifier = Modifier.fillMaxWidth(0.7f).height(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BCD4))
+            ) { Text("对战", fontSize = 14.sp) }
             
             Spacer(modifier = Modifier.height(16.dp))
             

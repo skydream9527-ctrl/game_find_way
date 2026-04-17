@@ -22,6 +22,8 @@ import com.gameway.presentation.screens.leaderboard.LeaderboardViewModel
 import com.gameway.presentation.screens.stats.StatsScreen
 import com.gameway.presentation.screens.friend.FriendScreen
 import com.gameway.presentation.screens.friend.FriendViewModel
+import com.gameway.presentation.screens.match.MatchScreen
+import com.gameway.presentation.screens.match.MatchViewModel
 import org.koin.androidx.compose.koinViewModel
 
 sealed class Screen(val route: String) {
@@ -42,6 +44,7 @@ sealed class Screen(val route: String) {
     data object Stats : Screen("stats")
     data object Leaderboard : Screen("leaderboard")
     data object Friend : Screen("friend")
+    data object Match : Screen("match")
 }
 
 @Composable
@@ -61,7 +64,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onSelectCharacter = { navController.navigate(Screen.CharacterSelect.route) },
                 onViewStats = { navController.navigate(Screen.Stats.route) },
                 onNavigateToLeaderboard = { navController.navigate(Screen.Leaderboard.route) },
-                onNavigateToFriend = { navController.navigate(Screen.Friend.route) }
+                onNavigateToFriend = { navController.navigate(Screen.Friend.route) },
+                onNavigateToMatch = { navController.navigate(Screen.Match.route) }
             )
         }
         
@@ -123,6 +127,13 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         composable(Screen.Friend.route) {
             FriendScreen(
                 viewModel = koinViewModel<FriendViewModel>(),
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.Match.route) {
+            MatchScreen(
+                viewModel = koinViewModel<MatchViewModel>(),
                 onBack = { navController.popBackStack() }
             )
         }
