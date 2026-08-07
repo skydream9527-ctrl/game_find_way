@@ -136,18 +136,18 @@
 
       <!-- 方向 B: 地形权重与 8 方向 -->
       <div class="tool-group">
-        <div class="tool-label">1. 地形与权重设置 (方向 B)</div>
+        <div class="tool-label">1. 地形与权重设置</div>
         <div class="btn-grid">
           <button class="tool-btn active" id="btnWall" onclick="setMode('wall')">🧱 墙壁 (Cost ∞)</button>
           <button class="tool-btn" id="btnSwamp" onclick="setMode('swamp')">🟩 沼泽 (Cost 5)</button>
           <button class="tool-btn" id="btnMountain" onclick="setMode('mountain')">🟫 山地 (Cost 10)</button>
-          <button class="tool-btn" id="btnDirToggle" onclick="toggleDirection()">🧭 8方向 (对角)</button>
+          <button class="tool-btn" id="btnDirToggle" onclick="toggleDirection()">🧭 4方向 (正交)</button>
         </div>
       </div>
 
       <!-- 方向 C: 迷宫算法 -->
       <div class="tool-group">
-        <div class="tool-label">2. 迷宫算法 (方向 C)</div>
+        <div class="tool-label">2. 迷宫算法</div>
         <div class="btn-grid">
           <button class="tool-btn" onclick="generateBacktrackerMaze()">🌀 递归回溯迷宫</button>
           <button class="tool-btn" onclick="generateRandomMaze()">🎲 随机障碍网格</button>
@@ -156,12 +156,12 @@
 
       <!-- 方向 D: 迷宫追逐游戏 -->
       <div class="tool-group">
-        <div class="tool-label">3. Enemy AI 追逐游戏 (方向 D)</div>
+        <div class="tool-label">3. Enemy AI 追逐游戏</div>
         <button class="action-btn" style="background:linear-gradient(135deg, #a855f7, #ec4899);" onclick="toggleGameMode()">🎮 开启 / 暂停 追逐游戏</button>
         <div style="font-size:11px; color:var(--text-muted);">方向键 / WASD 控制玩家 🏃，怪兽 👾 用 A* 实时追踪</div>
       </div>
 
-      <button class="action-btn" onclick="findPathAStar()">⚡ 计算静态 A* 最短路径</button>
+      <button class="action-btn" onclick="findPathAStar(startPos, endPos, true)">⚡ 计算静态 A* 最短路径</button>
       <button class="tool-btn" style="background:#ef4444;" onclick="clearGrid()">🧹 清空地图</button>
 
       <div class="info-box" id="statusInfo">
@@ -214,9 +214,9 @@
         }
       }
 
-      // Draw Path
-      if (currentPath.length > 0) {
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.5)';
+      // Draw Static Test Path
+      if (!isGameRunning && currentPath.length > 0) {
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.6)';
         currentPath.forEach(p => {
           ctx.fillRect(p.c * CELL_SIZE + 3, p.r * CELL_SIZE + 3, CELL_SIZE - 6, CELL_SIZE - 6);
         });
@@ -255,10 +255,11 @@
     function toggleDirection() {
       allowDiagonal = !allowDiagonal;
       document.getElementById('btnDirToggle').innerText = allowDiagonal ? '🧭 8方向 (对角)' : '🧭 4方向 (正交)';
-      findPathAStar();
+      findPathAStar(startPos, endPos, true);
     }
 
     canvas.addEventListener('click', (e) => {
+      if (isGameRunning) return;
       const rect = canvas.getBoundingClientRect();
       const c = Math.floor((e.clientX - rect.left) / CELL_SIZE);
       const r = Math.floor((e.clientY - rect.top) / CELL_SIZE);
@@ -271,7 +272,7 @@
       drawGrid();
     });
 
-    // 方向 C: 递归回溯迷宫算法 (Recursive Backtracker)
+    // 修复 Bug 3: 打通迷宫墙壁计算偶数下坐标浮点化 Bug (Math.floor 确保整数下标)
     function generateBacktrackerMaze() {
       clearGrid();
       for (let r = 0; r < GRID_SIZE; r++) {
@@ -290,7 +291,9 @@
           const nr = r + dr;
           const nc = c + dc;
           if (nr > 0 && nr < GRID_SIZE - 1 && nc > 0 && nc < GRID_SIZE - 1 && grid[nr][nc] === 1) {
-            grid[r + dr / 2][c + dc / 2] = 0;
+            const wallR = Math.floor(r + dr / 2);
+            const wallC = Math.floor(c + dc / 2);
+            grid[wallR][wallC] = 0;
             carve(nr, nc);
           }
         }
@@ -319,10 +322,11 @@
       grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
       currentPath = [];
       drawGrid();
+      document.getElementById('statusInfo').innerHTML = `地图: 20 x 20 | 模式: ${allowDiagonal ? '8方向' : '4方向'}<br>地图已清空<br>步数估算: —`;
     }
 
-    // 方向 B: 带 Cost 与 8 方向的 A* 算法
-    function findPathAStar(from = startPos, to = endPos) {
+    // 修复 Bug 1: 算法追逐解耦与参数防护 (updatePathFlag 防状态污染)
+    function findPathAStar(from = startPos, to = endPos, updatePathFlag = false) {
       const openSet = [{ ...from, g: 0, h: heuristic(from, to), parent: null }];
       const closedSet = new Set();
 
@@ -337,9 +341,11 @@
             path.push({ r: curr.r, c: curr.c });
             curr = curr.parent;
           }
-          currentPath = path;
-          drawGrid();
-          document.getElementById('statusInfo').innerHTML = `地图: 20x20 | 模式: ${allowDiagonal ? '8方向' : '4方向'}<br>✅ A* 成功! 开销 Cost: ${current.g.toFixed(1)}<br>路径: ${path.length} 步`;
+          if (updatePathFlag) {
+            currentPath = path;
+            drawGrid();
+            document.getElementById('statusInfo').innerHTML = `地图: 20x20 | 模式: ${allowDiagonal ? '8方向' : '4方向'}<br>✅ A* 搜索成功! 开销 Cost: ${current.g.toFixed(1)}<br>路径步数: ${path.length} 步`;
+          }
           return path;
         }
 
@@ -355,11 +361,10 @@
           if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) continue;
           if (grid[nr][nc] === 1 || closedSet.has(`${nr},${nc}`)) continue;
 
-          // Terrain Cost
           let terrainCost = 1;
           if (grid[nr][nc] === 5) terrainCost = 5;
           if (grid[nr][nc] === 10) terrainCost = 10;
-          if (dr !== 0 && dc !== 0) terrainCost *= 1.414; // Diagonal multiplier
+          if (dr !== 0 && dc !== 0) terrainCost *= 1.414;
 
           const gScore = current.g + terrainCost;
           let neighborInOpen = openSet.find(o => o.r === nr && o.c === nc);
@@ -372,7 +377,11 @@
           }
         }
       }
-      document.getElementById('statusInfo').innerHTML = `地图: 20x20 | 模式: ${allowDiagonal ? '8方向' : '4方向'}<br>⚠️ 路径不可达! Cost: ∞`;
+      if (updatePathFlag) {
+        currentPath = [];
+        drawGrid();
+        document.getElementById('statusInfo').innerHTML = `地图: 20x20 | 模式: ${allowDiagonal ? '8方向' : '4方向'}<br>⚠️ 路径不可达! Cost: ∞`;
+      }
       return [];
     }
 
@@ -382,7 +391,19 @@
       return allowDiagonal ? Math.max(dx, dy) : (dx + dy);
     }
 
-    // 方向 D: 迷宫追逐游戏 (Mini-Game Enemy AI)
+    // 修复 Bug 2: 游戏碰撞即时检测与 Interval 清理
+    function checkCollision() {
+      if (enemyPos.r === playerPos.r && enemyPos.c === playerPos.c) {
+        if (gameInterval) clearInterval(gameInterval);
+        isGameRunning = false;
+        document.getElementById('statusInfo').innerHTML = '地图: 20x20 | 🎮 游戏结束!<br>💥 玩家被 Enemy 捕获！';
+        alert("💥 玩家被 Enemy 捕获！游戏结束！");
+        drawGrid();
+        return true;
+      }
+      return false;
+    }
+
     function toggleGameMode() {
       isGameRunning = !isGameRunning;
       if (isGameRunning) {
@@ -391,22 +412,21 @@
         grid[playerPos.r][playerPos.c] = 0;
         grid[enemyPos.r][enemyPos.c] = 0;
 
+        document.getElementById('statusInfo').innerHTML = '地图: 20x20 | 🎮 追逐模式运行中...<br>请使用方向键 / WASD 逃避追捕';
+
+        if (gameInterval) clearInterval(gameInterval);
         gameInterval = setInterval(() => {
-          // Enemy A* Chase Player
-          const path = findPathAStar(enemyPos, playerPos);
+          if (!isGameRunning) return;
+          const path = findPathAStar(enemyPos, playerPos, false);
           if (path && path.length > 0) {
-            enemyPos = path[path.length - 1]; // Step towards player
+            enemyPos = path[path.length - 1];
           }
           drawGrid();
-
-          if (enemyPos.r === playerPos.r && enemyPos.c === playerPos.c) {
-            clearInterval(gameInterval);
-            isGameRunning = false;
-            alert("💥 玩家被 Enemy 捕获！游戏结束！");
-          }
+          checkCollision();
         }, 400);
       } else {
-        clearInterval(gameInterval);
+        if (gameInterval) clearInterval(gameInterval);
+        document.getElementById('statusInfo').innerHTML = '地图: 20x20 | 🎮 游戏已暂停';
       }
       drawGrid();
     }
@@ -424,6 +444,7 @@
       if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE && grid[nr][nc] !== 1) {
         playerPos = { r: nr, c: nc };
         drawGrid();
+        checkCollision();
       }
     });
 
