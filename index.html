@@ -3,181 +3,429 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game Find Way 🧭 — Android 迷宫与 A* / BFS 寻路算法实验室</title>
+  <title>Game Find Way 🧭 — A* 算法、地形权重、迷宫生成与 Enemy AI 追逐游戏</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #0f172a;
+      --border: rgba(255, 255, 255, 0.1);
+      --accent: #10b981;
+      --accent-purple: #8b5cf6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Inter', sans-serif;
-      background: #090d16;
-      color: #f8fafc;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 16px 24px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; color: var(--accent); }
+    .brand-icon {
+      width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+      border-radius: 10px; display: grid; place-items: center; color: #090d16; font-size: 18px;
+    }
+
+    .main-layout {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      max-width: 1300px;
+      width: 100%;
+      margin: 24px auto;
+      padding: 0 24px;
+    }
+    @media (max-width: 900px) {
+      .main-layout { grid-template-columns: 1fr; }
+    }
+
+    .canvas-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
-    }
-    .phone-frame {
-      width: 375px;
-      height: 720px;
-      background: #0f172a;
-      border: 12px solid #1e293b;
-      border-radius: 44px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(255, 255, 255, 0.1);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-    .phone-notch {
-      width: 140px; height: 24px;
-      background: #1e293b;
-      border-radius: 0 0 16px 16px;
-      margin: 0 auto;
-      display: flex; align-items: center; justify-content: center;
-      gap: 8px;
-    }
-    .notch-camera { width: 8px; height: 8px; background: #090d16; border-radius: 50%; }
-    .notch-speaker { width: 40px; height: 4px; background: #090d16; border-radius: 2px; }
-    
-    .status-bar {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 6px 20px; font-size: 11px; color: #94a3b8; font-weight: 600;
-    }
-    .app-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 18px; font-weight: 800; color: #10b981;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .app-body {
-      flex: 1; padding: 16px; overflow-y: auto; text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
 
-    .action-btn {
-      background: #10b981; color: #0f172a; border: none; font-weight: 800;
-      padding: 10px 16px; border-radius: 10px; cursor: pointer; font-size: 13px;
-      width: 100%; transition: all 0.2s ease; margin-bottom: 8px;
+    canvas {
+      background: #090d16;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
     }
-    .action-btn:hover { opacity: 0.9; transform: scale(0.98); }
-    .result-text { margin-top: 10px; font-weight: 700; color: #38bdf8; font-size: 13px; }
-    .home-bar { width: 120px; height: 4px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; margin: 12px auto; }
+
+    .control-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel-title { font-size: 18px; font-weight: 800; color: var(--accent); }
+
+    .tool-group {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .tool-label { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+
+    .btn-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+    }
+    .tool-btn {
+      background: #1e293b; color: #fff; border: 1px solid var(--border);
+      padding: 8px 12px; border-radius: 8px; font-weight: 700; font-size: 12px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .tool-btn:hover { background: #334155; }
+    .tool-btn.active { background: var(--accent); color: #090d16; }
+
+    .action-btn {
+      background: linear-gradient(135deg, var(--accent), #059669);
+      color: #fff; border: none; font-weight: 800; padding: 12px 20px;
+      border-radius: 12px; cursor: pointer; font-size: 14px; width: 100%;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); transition: transform 0.15s;
+    }
+    .action-btn:hover { transform: scale(1.02); }
+
+    .info-box {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px; font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; color: var(--accent);
+    }
   </style>
 </head>
 <body>
-
-  <div class="phone-frame">
-    <div class="phone-notch">
-      <div class="notch-camera"></div>
-      <div class="notch-speaker"></div>
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🧭</div>
+      <span>A* Pathfinding & AI Chase Simulator</span>
     </div>
-    <div class="status-bar">
-      <span>15:06</span>
-      <span>📶 5G  🔋 100%</span>
-    </div>
-    <div class="app-header">
-      <span>寻路算法实验室</span>
-      <span style="font-size:12px; opacity:0.7;">Android H5 Demo</span>
-    </div>
-    <div class="app-body">
-      <div style="font-size:12px; color:#94a3b8; margin-bottom:10px;">提示: 点击网格可自由放置/擦除红色障碍墙壁</div>
+  </header>
 
-      <canvas id="mazeCanvas" width="300" height="300" style="border-radius:14px; border:1px solid rgba(255,255,255,0.1); background:#090d16; cursor:pointer; margin-bottom:12px;"></canvas>
-
-      <button class="action-btn" onclick="findPath()">🧭 计算路径 (Run Algorithm)</button>
-      <button class="action-btn" style="background:#38bdf8;" onclick="generateRandomMaze()">🎲 随机生成迷宫</button>
-
-      <div id="resultText" class="result-text">点击网格放置障碍后，点击“计算路径”</div>
+  <div class="main-layout">
+    <div class="canvas-card">
+      <canvas id="gridCanvas" width="560" height="560"></canvas>
     </div>
-    <div class="home-bar"></div>
+
+    <div class="control-panel">
+      <div class="panel-title">⚙️ 寻路与追逐控制台</div>
+
+      <!-- 方向 B: 地形权重与 8 方向 -->
+      <div class="tool-group">
+        <div class="tool-label">1. 地形与权重设置 (方向 B)</div>
+        <div class="btn-grid">
+          <button class="tool-btn active" id="btnWall" onclick="setMode('wall')">🧱 墙壁 (Cost ∞)</button>
+          <button class="tool-btn" id="btnSwamp" onclick="setMode('swamp')">🟩 沼泽 (Cost 5)</button>
+          <button class="tool-btn" id="btnMountain" onclick="setMode('mountain')">🟫 山地 (Cost 10)</button>
+          <button class="tool-btn" id="btnDirToggle" onclick="toggleDirection()">🧭 8方向 (对角)</button>
+        </div>
+      </div>
+
+      <!-- 方向 C: 迷宫算法 -->
+      <div class="tool-group">
+        <div class="tool-label">2. 迷宫算法 (方向 C)</div>
+        <div class="btn-grid">
+          <button class="tool-btn" onclick="generateBacktrackerMaze()">🌀 递归回溯迷宫</button>
+          <button class="tool-btn" onclick="generateRandomMaze()">🎲 随机障碍网格</button>
+        </div>
+      </div>
+
+      <!-- 方向 D: 迷宫追逐游戏 -->
+      <div class="tool-group">
+        <div class="tool-label">3. Enemy AI 追逐游戏 (方向 D)</div>
+        <button class="action-btn" style="background:linear-gradient(135deg, #a855f7, #ec4899);" onclick="toggleGameMode()">🎮 开启 / 暂停 追逐游戏</button>
+        <div style="font-size:11px; color:var(--text-muted);">方向键 / WASD 控制玩家 🏃，怪兽 👾 用 A* 实时追踪</div>
+      </div>
+
+      <button class="action-btn" onclick="findPathAStar()">⚡ 计算静态 A* 最短路径</button>
+      <button class="tool-btn" style="background:#ef4444;" onclick="clearGrid()">🧹 清空地图</button>
+
+      <div class="info-box" id="statusInfo">
+        地图: 20 x 20 | 模式: 4方向<br>
+        地形: 包含沼泽与山地 Cost<br>
+        游戏: 未开启
+      </div>
+    </div>
   </div>
 
   <script>
-    const canvas = document.getElementById('mazeCanvas');
+    const canvas = document.getElementById('gridCanvas');
     const ctx = canvas.getContext('2d');
-    const sz = 60;
+    const GRID_SIZE = 20;
+    const CELL_SIZE = canvas.width / GRID_SIZE;
+
+    // 0: Empty (1), 1: Wall (∞), 5: Swamp (5), 10: Mountain (10)
+    let grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
+    let startPos = { r: 2, c: 2 };
+    let endPos = { r: 17, c: 17 };
+    let currentMode = 'wall';
+    let allowDiagonal = false;
+    let currentPath = [];
     
-    let grid = [
-      [0,0,0,1,0],
-      [1,1,0,1,0],
-      [0,0,0,0,0],
-      [0,1,1,1,0],
-      [0,0,0,0,0]
-    ];
+    // Mini-Game Mode (方向 D)
+    let isGameRunning = false;
+    let playerPos = { r: 2, c: 2 };
+    let enemyPos = { r: 17, c: 17 };
+    let gameInterval = null;
 
-    canvas.addEventListener('click', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const c = Math.floor((e.clientX - rect.left) / sz);
-      const r = Math.floor((e.clientY - rect.top) / sz);
-      if ((r === 0 && c === 0) || (r === 4 && c === 4)) return;
-      grid[r][c] = grid[r][c] === 1 ? 0 : 1;
-      drawGrid();
-    });
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    function drawGrid(path = []) {
-      ctx.clearRect(0,0,300,300);
-      for(let r=0; r<5; r++){
-        for(let c=0; c<5; c++){
-          ctx.fillStyle = grid[r][c] === 1 ? '#ef4444' : '#1e293b';
-          ctx.fillRect(c*sz+2, r*sz+2, sz-4, sz-4);
-        }
-      }
-      path.forEach(p => {
-        ctx.fillStyle = '#10b981';
-        ctx.fillRect(p[1]*sz+10, p[0]*sz+10, sz-20, sz-20);
-      });
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillRect(10, 10, 40, 40); // Start
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(4*sz+10, 4*sz+10, 40, 40); // End
-    }
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+          ctx.strokeRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 
-    function generateRandomMaze() {
-      for(let r=0; r<5; r++){
-        for(let c=0; c<5; c++){
-          if((r===0&&c===0)||(r===4&&c===4)) continue;
-          grid[r][c] = Math.random() < 0.3 ? 1 : 0;
-        }
-      }
-      drawGrid();
-      document.getElementById('resultText').innerText = '随机迷宫已生成！点击“计算路径”';
-    }
-
-    function findPath() {
-      // Simple BFS Pathfinding
-      const queue = [[[0,0]]];
-      const visited = new Set(['0,0']);
-      let foundPath = null;
-
-      while(queue.length > 0) {
-        const path = queue.shift();
-        const [r, c] = path[path.length - 1];
-        if (r === 4 && c === 4) { foundPath = path; break; }
-        
-        const dirs = [[0,1],[1,0],[0,-1],[-1,0]];
-        for(const [dr, dc] of dirs) {
-          const nr = r + dr, nc = c + dc;
-          if (nr>=0 && nr<5 && nc>=0 && nc<5 && grid[nr][nc] === 0 && !visited.has(`${nr},${nc}`)) {
-            visited.add(`${nr},${nc}`);
-            queue.push([...path, [nr, nc]]);
+          const cell = grid[r][c];
+          if (cell === 1) { // Wall
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(c * CELL_SIZE + 1, r * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+          } else if (cell === 5) { // Swamp
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.4)';
+            ctx.fillRect(c * CELL_SIZE + 1, r * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+          } else if (cell === 10) { // Mountain
+            ctx.fillStyle = 'rgba(217, 119, 6, 0.5)';
+            ctx.fillRect(c * CELL_SIZE + 1, r * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
           }
         }
       }
 
-      if (foundPath) {
-        let i = 0;
-        const timer = setInterval(() => {
-          if(i >= foundPath.length){ clearInterval(timer); document.getElementById('resultText').innerText = '🎉 A* 寻路成功！最快 ' + (foundPath.length-1) + ' 步到达终点'; return; }
-          drawGrid(foundPath.slice(0, i+1));
-          i++;
-        }, 200);
+      // Draw Path
+      if (currentPath.length > 0) {
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.5)';
+        currentPath.forEach(p => {
+          ctx.fillRect(p.c * CELL_SIZE + 3, p.r * CELL_SIZE + 3, CELL_SIZE - 6, CELL_SIZE - 6);
+        });
+      }
+
+      if (isGameRunning) {
+        // Draw Player 🏃
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc((playerPos.c + 0.5) * CELL_SIZE, (playerPos.r + 0.5) * CELL_SIZE, CELL_SIZE * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw Enemy 👾
+        ctx.fillStyle = '#ec4899';
+        ctx.beginPath();
+        ctx.arc((enemyPos.c + 0.5) * CELL_SIZE, (enemyPos.r + 0.5) * CELL_SIZE, CELL_SIZE * 0.4, 0, Math.PI * 2);
+        ctx.fill();
       } else {
-        document.getElementById('resultText').innerText = '❌ 无可行路径！请点击网格清理部分墙壁';
+        // Start
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(startPos.c * CELL_SIZE + 2, startPos.r * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4);
+        // End
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(endPos.c * CELL_SIZE + 2, endPos.r * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4);
       }
     }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      if (mode === 'wall') document.getElementById('btnWall').classList.add('active');
+      if (mode === 'swamp') document.getElementById('btnSwamp').classList.add('active');
+      if (mode === 'mountain') document.getElementById('btnMountain').classList.add('active');
+    }
+
+    function toggleDirection() {
+      allowDiagonal = !allowDiagonal;
+      document.getElementById('btnDirToggle').innerText = allowDiagonal ? '🧭 8方向 (对角)' : '🧭 4方向 (正交)';
+      findPathAStar();
+    }
+
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const c = Math.floor((e.clientX - rect.left) / CELL_SIZE);
+      const r = Math.floor((e.clientY - rect.top) / CELL_SIZE);
+
+      if (currentMode === 'wall') grid[r][c] = grid[r][c] === 1 ? 0 : 1;
+      else if (currentMode === 'swamp') grid[r][c] = grid[r][c] === 5 ? 0 : 5;
+      else if (currentMode === 'mountain') grid[r][c] = grid[r][c] === 10 ? 0 : 10;
+
+      currentPath = [];
+      drawGrid();
+    });
+
+    // 方向 C: 递归回溯迷宫算法 (Recursive Backtracker)
+    function generateBacktrackerMaze() {
+      clearGrid();
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          grid[r][c] = 1;
+        }
+      }
+
+      function carve(r, c) {
+        grid[r][c] = 0;
+        const dirs = [
+          [-2, 0], [2, 0], [0, -2], [0, 2]
+        ].sort(() => Math.random() - 0.5);
+
+        for (let [dr, dc] of dirs) {
+          const nr = r + dr;
+          const nc = c + dc;
+          if (nr > 0 && nr < GRID_SIZE - 1 && nc > 0 && nc < GRID_SIZE - 1 && grid[nr][nc] === 1) {
+            grid[r + dr / 2][c + dc / 2] = 0;
+            carve(nr, nc);
+          }
+        }
+      }
+      carve(1, 1);
+      grid[startPos.r][startPos.c] = 0;
+      grid[endPos.r][endPos.c] = 0;
+      drawGrid();
+    }
+
+    function generateRandomMaze() {
+      clearGrid();
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          if (Math.random() < 0.25) grid[r][c] = 1;
+          else if (Math.random() < 0.1) grid[r][c] = 5; // Swamp
+          else if (Math.random() < 0.05) grid[r][c] = 10; // Mountain
+        }
+      }
+      grid[startPos.r][startPos.c] = 0;
+      grid[endPos.r][endPos.c] = 0;
+      drawGrid();
+    }
+
+    function clearGrid() {
+      grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
+      currentPath = [];
+      drawGrid();
+    }
+
+    // 方向 B: 带 Cost 与 8 方向的 A* 算法
+    function findPathAStar(from = startPos, to = endPos) {
+      const openSet = [{ ...from, g: 0, h: heuristic(from, to), parent: null }];
+      const closedSet = new Set();
+
+      while (openSet.length > 0) {
+        openSet.sort((a, b) => (a.g + a.h) - (b.g + b.h));
+        const current = openSet.shift();
+
+        if (current.r === to.r && current.c === to.c) {
+          const path = [];
+          let curr = current;
+          while (curr.parent) {
+            path.push({ r: curr.r, c: curr.c });
+            curr = curr.parent;
+          }
+          currentPath = path;
+          drawGrid();
+          document.getElementById('statusInfo').innerHTML = `地图: 20x20 | 模式: ${allowDiagonal ? '8方向' : '4方向'}<br>✅ A* 成功! 开销 Cost: ${current.g.toFixed(1)}<br>路径: ${path.length} 步`;
+          return path;
+        }
+
+        closedSet.add(`${current.r},${current.c}`);
+
+        const dirs = allowDiagonal ? [
+          [-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]
+        ] : [[-1,0],[1,0],[0,-1],[0,1]];
+
+        for (let [dr, dc] of dirs) {
+          const nr = current.r + dr;
+          const nc = current.c + dc;
+          if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) continue;
+          if (grid[nr][nc] === 1 || closedSet.has(`${nr},${nc}`)) continue;
+
+          // Terrain Cost
+          let terrainCost = 1;
+          if (grid[nr][nc] === 5) terrainCost = 5;
+          if (grid[nr][nc] === 10) terrainCost = 10;
+          if (dr !== 0 && dc !== 0) terrainCost *= 1.414; // Diagonal multiplier
+
+          const gScore = current.g + terrainCost;
+          let neighborInOpen = openSet.find(o => o.r === nr && o.c === nc);
+
+          if (!neighborInOpen) {
+            openSet.push({ r: nr, c: nc, g: gScore, h: heuristic({r: nr, c: nc}, to), parent: current });
+          } else if (gScore < neighborInOpen.g) {
+            neighborInOpen.g = gScore;
+            neighborInOpen.parent = current;
+          }
+        }
+      }
+      document.getElementById('statusInfo').innerHTML = `地图: 20x20 | 模式: ${allowDiagonal ? '8方向' : '4方向'}<br>⚠️ 路径不可达! Cost: ∞`;
+      return [];
+    }
+
+    function heuristic(pos, end) {
+      const dx = Math.abs(pos.c - end.c);
+      const dy = Math.abs(pos.r - end.r);
+      return allowDiagonal ? Math.max(dx, dy) : (dx + dy);
+    }
+
+    // 方向 D: 迷宫追逐游戏 (Mini-Game Enemy AI)
+    function toggleGameMode() {
+      isGameRunning = !isGameRunning;
+      if (isGameRunning) {
+        playerPos = { r: 1, c: 1 };
+        enemyPos = { r: 18, c: 18 };
+        grid[playerPos.r][playerPos.c] = 0;
+        grid[enemyPos.r][enemyPos.c] = 0;
+
+        gameInterval = setInterval(() => {
+          // Enemy A* Chase Player
+          const path = findPathAStar(enemyPos, playerPos);
+          if (path && path.length > 0) {
+            enemyPos = path[path.length - 1]; // Step towards player
+          }
+          drawGrid();
+
+          if (enemyPos.r === playerPos.r && enemyPos.c === playerPos.c) {
+            clearInterval(gameInterval);
+            isGameRunning = false;
+            alert("💥 玩家被 Enemy 捕获！游戏结束！");
+          }
+        }, 400);
+      } else {
+        clearInterval(gameInterval);
+      }
+      drawGrid();
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (!isGameRunning) return;
+      let nr = playerPos.r;
+      let nc = playerPos.c;
+
+      if (e.key === 'ArrowUp' || e.key === 'w') nr--;
+      if (e.key === 'ArrowDown' || e.key === 's') nr++;
+      if (e.key === 'ArrowLeft' || e.key === 'a') nc--;
+      if (e.key === 'ArrowRight' || e.key === 'd') nc++;
+
+      if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE && grid[nr][nc] !== 1) {
+        playerPos = { r: nr, c: nc };
+        drawGrid();
+      }
+    });
 
     drawGrid();
   </script>
